@@ -119,19 +119,18 @@ window.addEventListener('mousedown', event => {
 	fogTween.start();
 	
 	// move the camera closer to the sprite
-	const cameraPos = {x: camera.position.x, y: camera.position.y, z: camera.position.z};
-	
-	const objectVec = new THREE.Vector3(focusedSprite.position.x, focusedSprite.position.y, focusedSprite.position.z);
-	const cameraVec = new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z);
-	const distance = objectVec.sub(cameraVec);
+	const cameraPos = camera.position.clone();
+	const distance = focusedSprite.position.clone().sub(camera.position);
 	const minus = distance.clone().multiplyScalar(3 / distance.length());
 	distance.sub(minus);
 	
 	const cameraPosTween = new TWEEN.Tween(cameraPos)
-		.to({x: camera.position.x + distance.x, y: camera.position.y + distance.y, z: camera.position.z + distance.z}, 1000)
+		.to(cameraPos.clone().add(distance), 1000)
 		.easing(TWEEN.Easing.Quartic.Out);
 	cameraPosTween.onUpdate(() => {
 	  camera.position.set(cameraPos.x, cameraPos.y, cameraPos.z);
 	});
 	cameraPosTween.start();
+	
+	//camera.lookAt(focusedSprite.position);
 });
