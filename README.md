@@ -1,3 +1,8 @@
+# Todo
+
+- Adjust the sprite scale
+
 # Bugs
 
-- clickして、tween終わってないのに再clickしたら死ぬ
+- Camera rotation is weird
+- Should the camera rotation restored when leaving the focus mode?
