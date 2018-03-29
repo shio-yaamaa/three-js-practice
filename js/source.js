@@ -22,9 +22,8 @@ let previousCameraQuaternion;
 
 // fly controls
 const flyControls = new THREE.FlyControls(camera, container);
-let isFlyControlsActive = true;
 flyControls.movementSpeed = 0;
-flyControls.rollSpeed = 0; //Math.PI / 6;
+flyControls.rollSpeed = Math.PI / 6;
 
 // raycaster
 const raycaster = new THREE.Raycaster();
@@ -41,7 +40,6 @@ const subwayImgNames = ['american', 'banana_peppers', 'black_forest_ham', 'black
  'sweet_onion', 'sweet_onion_chicken_teriyaki', 'tomatoes', 'tuna', 'turkey_breast', 'vinaigrette', 'vinegar'];
 const spriteMaps = subwayImgNames.map(name => new THREE.TextureLoader().load(`img/${name}.png`));
 
-/*
 for (let i = 0; i < 500; i++) {
 	const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
 		map: spriteMaps[i % spriteMaps.length],
@@ -52,28 +50,7 @@ for (let i = 0; i < 500; i++) {
 	sprite.scale.set(3, 3);
 	sprite.position.set(Math.random() * 100 - 50, Math.random() * 100 - 50, Math.random() * 100 - 50);
 	scene.add(sprite);
-}*/
-
-var geometry = new THREE.BoxGeometry( 2, 2, 2 );
-var material = new THREE.MeshBasicMaterial( {color: 0xffffff} );
-var cube = new THREE.Mesh( geometry, material );
-cube.position.set(5, 5, -5);
-scene.add( cube );
-
-var geometry = new THREE.PlaneGeometry(100, 100);
-var material = new THREE.MeshBasicMaterial( {map: new THREE.TextureLoader().load('texture.jpg'), color: 0xfff00f, side: THREE.DoubleSide} );
-var plane1 = new THREE.Mesh( geometry, material );
-plane1.position.set(0, 0, -50);
-scene.add( plane1 );
-
-var plane2 = new THREE.Mesh(geometry, material);
-plane2.position.set(0, 50, 0);
-plane2.rotation.x = Math.PI / 2;
-scene.add(plane2);
-
-var plane3 = new THREE.Mesh(geometry, material);
-plane3.position.set(0, 0, 50);
-scene.add(plane3);
+}
 
 // animate loop
 const animate = () => {
@@ -147,7 +124,7 @@ const enterFocusMode = focusedSprite => {
 	const fogForTween = {density: 0.03};
 	const fogTween = new TWEEN.Tween(fogForTween).to({density: 0.2});
 	fogTween.onUpdate(() => scene.fog.density = fogForTween.density);
-	//fogTween.start();
+	fogTween.start();
 	
 	// move the camera closer to the sprite
 	previousCameraPosition = camera.position.clone();
@@ -157,17 +134,29 @@ const enterFocusMode = focusedSprite => {
 	const cameraPosTween = new TWEEN.Tween(camera.position)
 		.to(camera.position.clone().add(distance), 1000)
 		.easing(TWEEN.Easing.Quartic.Out);
-	//cameraPosTween.start();
+	cameraPosTween.start();
 	
 	// rotate the camera
-	calculateRotation(camera.rotation, focusedSprite.position.clone().sub(camera.position))
+	const dummyCamera = camera.clone();
+	dummyCamera.lookAt(focusedSprite.position);
+	// don't want to tween the 'order' property of Euler
+	const cameraRotationForTween = {x: camera.rotation.x, y: camera.rotation.y, z: camera.rotation.z};
+	const targetCameraRotation = {x: dummyCamera.rotation.x, y: dummyCamera.rotation.y, z: dummyCamera.rotation.z};
+	const cameraRotationTween = new TWEEN.Tween(cameraRotationForTween)
+		.to(targetCameraRotation, 1000);
+	cameraRotationTween.onUpdate(() => {
+		camera.rotation.x = cameraRotationForTween.x;
+		camera.rotation.y = cameraRotationForTween.y;
+		camera.rotation.z = cameraRotationForTween.z;
+	});
+	cameraRotationTween.start();
 };
 
 const leaveFocusMode = focusedSprite => {
 	focusedSprite.material.color.set(0xffffff);
 	
 	// resume rolling
-	//flyControls.rollSpeed = Math.PI / 6;
+	flyControls.rollSpeed = Math.PI / 6;
 		
 	// reset the fog
 	if (focusedSprite) {
@@ -187,40 +176,6 @@ renderer.domElement.addEventListener('mouseleave', () => {
 });
 renderer.domElement.addEventListener('mouseenter', () => {
 	if (!focusedSprite) {
-		//flyControls.rollSpeed = Math.PI / 5;
+		flyControls.rollSpeed = Math.PI / 5;
 	}
 });
-
-const calculateRotation = (originalRotation, targetVector) => {
-	const rotation = {x: null, y: null, z: null};
-	
-	// rotation.x
-	// origin vector is {y: 0, z: 1}
-	let dotProduct = targetVector.z;
-	let cosTheta = dotProduct / targetVector.length();
-	cosTheta = -cosTheta;
-	let theta = Math.sqrt(2 * (1 - cosTheta));
-	rotation.x = theta;
-	rotation.x = Math.PI / 8;
-	
-	// rotation.y
-	// origin vector is {x: 1, z: 0}
-	dotProduct = targetVector.x;
-	cosTheta = dotProduct / targetVector.length();
-	theta = Math.sqrt(2 * (1 - cosTheta));
-	rotation.y = -theta;
-	rotation.y = -Math.PI / 4;
-	
-	// rotation.z
-	// origin vector is {x: 1, y: 0}
-	dotProduct = targetVector.x;
-	cosTheta = dotProduct / targetVector.length();
-	theta = Math.sqrt(2 * (1 - cosTheta));
-	console.log(theta);
-	rotation.z = -theta;
-	rotation.z = Math.PI / 8;
-	
-	const cameraRotationTween = new TWEEN.Tween(camera.rotation)
-		.to(rotation, 2000);
-	cameraRotationTween.start();
-};
