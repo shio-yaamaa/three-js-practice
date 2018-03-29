@@ -6,6 +6,8 @@
 const SCENE_BACKGROUND = 0x000000;
 const DEFAULT_SPRITE_COLOR = 0xffffff;
 const HOVERED_SPRITE_COLOR = 0xe57373;
+// Size
+const SPRITE_MAX_SIZE = 4;
 // Fog density
 const DEFAULT_FOG_DENSITY = 0.02;
 const FOG_DENSITY_IN_FOCUS_MODE = 0.2;
@@ -56,12 +58,23 @@ const subwayImgNames = ['american', 'banana_peppers', 'black_forest_ham', 'black
  'jalapenos', 'lettuce', 'mayonnaise', 'meatball_marinara', 'monterey_cheddar', 'multi_grain_flatbread',
  'mustard', 'nine_grain_wheat', 'oil', 'oven_roasted_chicken', 'pickles', 'ranch', 'red_onions', 'spinach',
  'sweet_onion', 'sweet_onion_chicken_teriyaki', 'tomatoes', 'tuna', 'turkey_breast', 'vinaigrette', 'vinegar'];
-const spriteMaps = subwayImgNames.map(name => new THREE.TextureLoader().load(`img/${name}.png`));
+const pepperImgNames = ['square_pepper', 'horizontal_pepper', 'vertical_pepper'];
+//const spriteMaps = pepperImgNames.map(name => new THREE.TextureLoader().load(`img/${name}.png`));
 
 for (let i = 0; i < 500; i++) {
 	const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
-		map: spriteMaps[i % spriteMaps.length],
+		//map: spriteMaps[i % spriteMaps.length],
 		//map: spriteMaps[Math.floor(Math.random() * spriteMaps.length)],
+		map: new THREE.TextureLoader().load(
+			`img/${pepperImgNames[i % pepperImgNames.length]}.png`,
+			texture => {
+				if (texture.image.width >= texture.image.height) {
+					sprite.scale.set(SPRITE_MAX_SIZE, texture.image.height * (SPRITE_MAX_SIZE / texture.image.width));
+				} else {
+					sprite.scale.set(texture.image.width * (SPRITE_MAX_SIZE / texture.image.height), SPRITE_MAX_SIZE);
+				}
+			}
+		),
 		color: DEFAULT_SPRITE_COLOR,
 		fog: true
 	}));

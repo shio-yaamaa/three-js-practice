@@ -1,8 +1,8 @@
 # Todo
 
-- Adjust the sprite scale
+- Make click easier
 
 # Bugs
 
-- Camera rotation is weird
+- Strange camera rotation
 - Should the camera rotation restored when leaving the focus mode?
