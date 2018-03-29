@@ -92,3 +92,90 @@ window.addEventListener('mousemove', event => {
 	mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
 	mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
 }, false);
+
+lookAt: function () {
+	var x = new Vector3();
+	var y = new Vector3();
+	var z = new Vector3();
+
+	return function lookAt( eye, target, up ) {
+		var te = this.elements;
+		z.subVectors( eye, target );
+		if ( z.lengthSq() === 0 ) {
+			// eye and target are in the same position
+			z.z = 1;
+		}
+		z.normalize();
+		x.crossVectors( up, z );
+
+		if ( x.lengthSq() === 0 ) {
+			// up and z are parallel
+			if ( Math.abs( up.z ) === 1 ) {
+				z.x += 0.0001;
+			} else {
+				z.z += 0.0001;
+			}
+			z.normalize();
+			x.crossVectors( up, z );
+		}
+
+		x.normalize();
+		y.crossVectors( z, x );
+
+		te[ 0 ] = x.x; te[ 4 ] = y.x; te[ 8 ] = z.x;
+		te[ 1 ] = x.y; te[ 5 ] = y.y; te[ 9 ] = z.y;
+		te[ 2 ] = x.z; te[ 6 ] = y.z; te[ 10 ] = z.z;
+
+		return this;
+	};
+}(),
+
+lookAt: function () {
+	// This method does not support objects with rotated and/or translated parent(s)
+	var m1 = new Matrix4();
+	var vector = new Vector3();
+
+	return function lookAt( x, y, z ) {
+		vector.set( x, y, z );
+		m1.lookAt( this.position, vector, this.up );
+		
+		this.quaternion.setFromRotationMatrix( m1 );
+	};
+}(),
+
+setFromRotationMatrix: function ( m ) {
+	const te = m.elements;
+
+	const m11 = te[ 0 ], m12 = te[ 4 ], m13 = te[ 8 ],
+				m21 = te[ 1 ], m22 = te[ 5 ], m23 = te[ 9 ],
+				m31 = te[ 2 ], m32 = te[ 6 ], m33 = te[ 10 ],
+
+	const trace = m11 + m22 + m33;
+	let s;
+
+	if ( trace > 0 ) {
+		s = 0.5 / Math.sqrt( trace + 1.0 );
+		this._w = 0.25 / s;
+		this._x = ( m32 - m23 ) * s;
+		this._y = ( m13 - m31 ) * s;
+		this._z = ( m21 - m12 ) * s;
+	} else if ( m11 > m22 && m11 > m33 ) {
+		s = 2.0 * Math.sqrt( 1.0 + m11 - m22 - m33 );
+		this._w = ( m32 - m23 ) / s;
+		this._x = 0.25 * s;
+		this._y = ( m12 + m21 ) / s;
+		this._z = ( m13 + m31 ) / s;
+	} else if ( m22 > m33 ) {
+		s = 2.0 * Math.sqrt( 1.0 + m22 - m11 - m33 );
+		this._w = ( m13 - m31 ) / s;
+		this._x = ( m12 + m21 ) / s;
+		this._y = 0.25 * s;
+		this._z = ( m23 + m32 ) / s;
+	} else {
+		s = 2.0 * Math.sqrt( 1.0 + m33 - m11 - m22 );
+		this._w = ( m21 - m12 ) / s;
+		this._x = ( m13 + m31 ) / s;
+		this._y = ( m23 + m32 ) / s;
+		this._z = 0.25 * s;
+	}
+}
