@@ -31,7 +31,7 @@ container.appendChild(renderer.domElement);
 
 // Fly controls
 const flyControls = new THREE.FlyControls(camera, container);
-flyControls.movementSpeed = 0;
+flyControls.movementSpeed = 30;
 const toggleFlyControlsRolling = activate => {
 	flyControls.rollSpeed = activate ? FLY_CONTROLS_ROLL_SPEED : 0;
 };
@@ -190,6 +190,29 @@ const leaveFocusMode = focusedSprite => {
 	ongoingFocusTween = tween;
 	tween.start();
 };
+
+let wheelTimer;
+
+// Wheel event
+renderer.domElement.addEventListener('wheel', event => {
+	if (focusedSprite) {
+		return;
+	}
+	
+	flyControls.moveState.forward = event.wheelDelta > 0 ? 1 : 0;
+	flyControls.moveState.back = event.wheelDelta > 0 ? 0 : 1;
+	flyControls.updateMovementVector();
+	
+	clearTimeout(wheelTimer);
+	wheelTimer = setTimeout(
+		() => {
+			flyControls.moveState.forward = 0;
+			flyControls.moveState.back = 0;
+			flyControls.updateMovementVector();
+		},
+		200
+	);
+});
 
 // Window adjustments
 window.addEventListener('resize', event => {
