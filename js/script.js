@@ -9,11 +9,11 @@ const HOVERED_SPRITE_COLOR = 0xe57373;
 // Size
 const SPRITE_MAX_SIZE = 4;
 // Fog density
-const DEFAULT_FOG_DENSITY = 0.02;
+const DEFAULT_FOG_DENSITY = 0;//0.02;
 const FOG_DENSITY_IN_FOCUS_MODE = 0.2;
 // Animation
 const FLY_CONTROLS_ROLL_SPEED = Math.PI / 6;
-const FOCUS_MODE_ANIMATION_DURATION = 800;
+const FOCUS_MODE_ANIMATION_DURATION = 2000;
 
 // Fly controls container
 const clock = new THREE.Clock();
@@ -40,7 +40,6 @@ toggleFlyControlsRolling(true);
 // Raycaster
 const raycaster = new THREE.Raycaster();
 let intersected; // save the previously intersected object
-raycaster.intersectObjects(THREE.Sprite);
 const mouse = new THREE.Vector2();
 window.addEventListener('mousemove', event => {
 	mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -61,6 +60,7 @@ const subwayImgNames = ['american', 'banana_peppers', 'black_forest_ham', 'black
 const pepperImgNames = ['square_pepper', 'horizontal_pepper', 'vertical_pepper'];
 //const spriteMaps = pepperImgNames.map(name => new THREE.TextureLoader().load(`img/${name}.png`));
 
+const sprites = [];
 for (let i = 0; i < 500; i++) {
 	const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
 		//map: spriteMaps[i % spriteMaps.length],
@@ -81,6 +81,42 @@ for (let i = 0; i < 500; i++) {
 	sprite.scale.set(3, 3);
 	sprite.position.set(Math.random() * 100 - 50, Math.random() * 100 - 50, Math.random() * 100 - 50);
 	scene.add(sprite);
+	sprites.push(sprite);
+}
+
+console.log(sprites);
+raycaster.intersectObjects(sprites);
+
+// Axes
+// X
+const xAxesMaterial = new THREE.LineBasicMaterial({color: 0xff0000});
+for (let i = -10; i < 11; i++) {
+	if (i == 0) {
+		continue;
+	}
+	const geometry = new THREE.Geometry();
+	geometry.vertices.push(new THREE.Vector3(-100, 0, i), new THREE.Vector3(100, 0, i));
+	scene.add(new THREE.Line(geometry, xAxesMaterial));
+}
+// Y
+const yAxesMaterial = new THREE.LineBasicMaterial({color: 0x00ff00});
+for (let i = -10; i < 11; i++) {
+	if (i == 0) {
+		continue;
+	}
+	const geometry = new THREE.Geometry();
+	geometry.vertices.push(new THREE.Vector3(i, -100, 0), new THREE.Vector3(i, 100, 0));
+	scene.add(new THREE.Line(geometry, yAxesMaterial));
+}
+// Z
+const zAxesMaterial = new THREE.LineBasicMaterial({color: 0x0000ff});
+for (let i = -10; i < 11; i++) {
+	if (i == 0) {
+		continue;
+	}
+	const geometry = new THREE.Geometry();
+	geometry.vertices.push(new THREE.Vector3(0, i, -100), new THREE.Vector3(0, i, 100));
+	scene.add(new THREE.Line(geometry, zAxesMaterial));
 }
 
 // Animate and Render
@@ -90,7 +126,6 @@ const animate = () => {
 };
 
 const render = () => {
-	camera.updateProjectionMatrix();
 	TWEEN.update();
   flyControls.update(clock.getDelta());
   
@@ -146,8 +181,11 @@ const enterFocusMode = focusedSprite => {
 	const dummyCamera = camera.clone();
 	dummyCamera.lookAt(focusedSprite.position);
 	// Don't tween the 'order' property of Euler
-	Object.assign(tweenValues, {rotX: camera.rotation.x, rotY: camera.rotation.y, rotZ: camera.rotation.z});
-	Object.assign(tweenTarget, {rotX: dummyCamera.rotation.x, rotY: dummyCamera.rotation.y, rotZ: dummyCamera.rotation.z});
+	console.log(camera.quaternion._x);
+	Object.assign(tweenValues, {qX: camera.quaternion._x, qY: camera.quaternion._y, qZ: camera.quaternion._z, qW: camera.quaternion._w});
+	Object.assign(tweenTarget, {qX: dummyCamera.quaternion._x, qY: dummyCamera.quaternion._y, qZ: dummyCamera.quaternion._z, qW: dummyCamera.quaternion._w});
+	//Object.assign(tweenValues, {rotX: camera.rotation.x, rotY: camera.rotation.y, rotZ: camera.rotation.z});
+	//Object.assign(tweenTarget, {rotX: dummyCamera.rotation.x, rotY: dummyCamera.rotation.y, rotZ: dummyCamera.rotation.z});
 	
 	// Tween everything
 	const tween = new TWEEN.Tween(tweenValues)
@@ -156,7 +194,8 @@ const enterFocusMode = focusedSprite => {
 	tween.onUpdate(() => {
 		scene.fog.density = tweenValues.fogDensity;
 		Object.assign(camera.position, {x: tweenValues.posX, y: tweenValues.posY, z: tweenValues.posZ});
-		Object.assign(camera.rotation, {x: tweenValues.rotX, y: tweenValues.rotY, z: tweenValues.rotZ});
+		//Object.assign(camera.rotation, {x: tweenValues.rotX, y: tweenValues.rotY, z: tweenValues.rotZ});
+		Object.assign(camera.quaternion, {_x: tweenValues.qX, _y: tweenValues.qY, _z: tweenValues.qZ, _w: tweenValues.qW});
 	});
 	ongoingFocusTween && ongoingFocusTween.stop();
 	ongoingFocusTween = tween;
