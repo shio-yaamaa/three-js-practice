@@ -10,9 +10,9 @@ const HOVERED_SPRITE_COLOR = 0xe57373;
 const SPRITE_MAX_SIZE = 4;
 // Fog density
 const DEFAULT_FOG_DENSITY = 0;//0.02;
-const FOG_DENSITY_IN_FOCUS_MODE = 0.2;
+const FOG_DENSITY_IN_FOCUS_MODE = 0; //0.2;
 // Animation
-const FLY_CONTROLS_ROLL_SPEED = Math.PI / 6;
+const FLY_CONTROLS_ROLL_SPEED = Math.PI / 5; // Math.PI / 6;
 const FOCUS_MODE_ANIMATION_DURATION = 2000;
 
 // Fly controls container
@@ -28,6 +28,10 @@ const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerH
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 container.appendChild(renderer.domElement);
+
+// For adjusting camera.up
+let previousCameraUp = camera.up.clone();
+let previousCameraRotation = camera.rotation.clone();
 
 // Fly controls
 const flyControls = new THREE.FlyControls(camera, container);
@@ -60,7 +64,7 @@ const subwayImgNames = ['american', 'banana_peppers', 'black_forest_ham', 'black
 const pepperImgNames = ['square_pepper', 'horizontal_pepper', 'vertical_pepper'];
 //const spriteMaps = pepperImgNames.map(name => new THREE.TextureLoader().load(`img/${name}.png`));
 
-const sprites = [];
+/*
 for (let i = 0; i < 500; i++) {
 	const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
 		//map: spriteMaps[i % spriteMaps.length],
@@ -81,49 +85,30 @@ for (let i = 0; i < 500; i++) {
 	sprite.scale.set(3, 3);
 	sprite.position.set(Math.random() * 100 - 50, Math.random() * 100 - 50, Math.random() * 100 - 50);
 	scene.add(sprite);
-	sprites.push(sprite);
-}
+}*/
 
-console.log(sprites);
-raycaster.intersectObjects(sprites);
+const coneGeometry = new THREE.ConeGeometry(3, 5, 5);
+/*
+for (let i = 0; i < 100; i++) {
+	const material = new THREE.MeshBasicMaterial({color: parseInt(Math.floor(Math.random() * (16 ** 6)).toString(16), 16)});
+	const cone = new THREE.Mesh(coneGeometry, material);
+	cone.position.set(Math.random() * 100 - 50, Math.random() * 100 - 50, Math.random() * 100 - 50);
+	scene.add(cone);
+}*/
 
-// Axes
-// X
-const xAxesMaterial = new THREE.LineBasicMaterial({color: 0xff0000});
-for (let i = -10; i < 11; i++) {
-	if (i == 0) {
-		continue;
-	}
-	const geometry = new THREE.Geometry();
-	geometry.vertices.push(new THREE.Vector3(-100, 0, i), new THREE.Vector3(100, 0, i));
-	scene.add(new THREE.Line(geometry, xAxesMaterial));
-}
-// Y
-const yAxesMaterial = new THREE.LineBasicMaterial({color: 0x00ff00});
-for (let i = -10; i < 11; i++) {
-	if (i == 0) {
-		continue;
-	}
-	const geometry = new THREE.Geometry();
-	geometry.vertices.push(new THREE.Vector3(i, -100, 0), new THREE.Vector3(i, 100, 0));
-	scene.add(new THREE.Line(geometry, yAxesMaterial));
-}
-// Z
-const zAxesMaterial = new THREE.LineBasicMaterial({color: 0x0000ff});
-for (let i = -10; i < 11; i++) {
-	if (i == 0) {
-		continue;
-	}
-	const geometry = new THREE.Geometry();
-	geometry.vertices.push(new THREE.Vector3(0, i, -100), new THREE.Vector3(0, i, 100));
-	scene.add(new THREE.Line(geometry, zAxesMaterial));
-}
+// cone that spins
+const material = new THREE.MeshBasicMaterial({color: 0xff0000});
+const cone = new THREE.Mesh(coneGeometry, material);
+cone.position.set(14.452969973613492, -13.185255398579756, 19.225105918489447);
+scene.add(cone);
 
 // Animate and Render
 const animate = () => {
 	requestAnimationFrame(animate);
 	render();
 };
+
+let previousColor = 0xffffff;
 
 const render = () => {
 	TWEEN.update();
@@ -135,9 +120,11 @@ const render = () => {
 		const intersects = raycaster.intersectObjects(scene.children);
 		
   	if (intersected && intersected != intersects[0]) {
-  		intersected.object.material.color.set(DEFAULT_SPRITE_COLOR); // Reset the previously hovered sprite's color
+  		//intersected.object.material.color.set(DEFAULT_SPRITE_COLOR); // Reset the previously hovered sprite's color
+  		intersected.object.material.color.set(previousColor);
   	}
 		intersected = intersects[0];
+		if (intersected) {previousColor = intersected.object.material.color.clone()};
 		intersected && intersected.object.material.color.set(HOVERED_SPRITE_COLOR);
   }
 	
@@ -164,6 +151,26 @@ const enterFocusMode = focusedSprite => {
 	const tweenValues = {};
 	const tweenTarget = {};
 	
+	console.log('sprite position', focusedSprite.position);
+	
+	const cameraRotationDiff = new THREE.Euler().setFromVector3(
+		new THREE.Vector3().subVectors(
+			camera.rotation.toVector3(),
+			previousCameraRotation.toVector3()
+		)
+	);
+
+	console.log('cameraRotationDiff', cameraRotationDiff);
+	console.log('angle', camera.rotation.toVector3().angleTo(previousCameraRotation.toVector3()));
+	previousCameraRotation = camera.rotation.clone();
+	const currentCameraUp = previousCameraUp.clone().applyEuler(cameraRotationDiff);
+	
+	//console.log('previousCameraUp', previousCameraUp);
+	//console.log('currentCameraUp', currentCameraUp);
+	
+	camera.up = currentCameraUp.clone();
+	previousCameraUp = camera.up.clone();
+	
 	// Make the fog denser; the fog should not affect the focused sprite
 	focusedSprite.material.fog = false;
 	tweenValues.fogDensity = scene.fog.density;
@@ -181,7 +188,7 @@ const enterFocusMode = focusedSprite => {
 	const dummyCamera = camera.clone();
 	dummyCamera.lookAt(focusedSprite.position);
 	// Don't tween the 'order' property of Euler
-	console.log(camera.quaternion._x);
+	//console.log(camera.quaternion._x);
 	Object.assign(tweenValues, {qX: camera.quaternion._x, qY: camera.quaternion._y, qZ: camera.quaternion._z, qW: camera.quaternion._w});
 	Object.assign(tweenTarget, {qX: dummyCamera.quaternion._x, qY: dummyCamera.quaternion._y, qZ: dummyCamera.quaternion._z, qW: dummyCamera.quaternion._w});
 	//Object.assign(tweenValues, {rotX: camera.rotation.x, rotY: camera.rotation.y, rotZ: camera.rotation.z});
@@ -189,13 +196,14 @@ const enterFocusMode = focusedSprite => {
 	
 	// Tween everything
 	const tween = new TWEEN.Tween(tweenValues)
-		.to(tweenTarget, FOCUS_MODE_ANIMATION_DURATION)
-		.easing(TWEEN.Easing.Quartic.Out);
+		.to(tweenTarget, FOCUS_MODE_ANIMATION_DURATION);
+		//.easing(TWEEN.Easing.Quartic.Out);
 	tween.onUpdate(() => {
 		scene.fog.density = tweenValues.fogDensity;
-		Object.assign(camera.position, {x: tweenValues.posX, y: tweenValues.posY, z: tweenValues.posZ});
+		//Object.assign(camera.position, {x: tweenValues.posX, y: tweenValues.posY, z: tweenValues.posZ});
 		//Object.assign(camera.rotation, {x: tweenValues.rotX, y: tweenValues.rotY, z: tweenValues.rotZ});
 		Object.assign(camera.quaternion, {_x: tweenValues.qX, _y: tweenValues.qY, _z: tweenValues.qZ, _w: tweenValues.qW});
+		console.log(tweenValues.qW, tweenValues.qX, tweenValues.qY, tweenValues.qZ);
 	});
 	ongoingFocusTween && ongoingFocusTween.stop();
 	ongoingFocusTween = tween;
@@ -219,8 +227,8 @@ const leaveFocusMode = focusedSprite => {
 	
 	// Tween everything
 	const tween = new TWEEN.Tween(tweenValues)
-		.to(tweenTarget, FOCUS_MODE_ANIMATION_DURATION)
-		.easing(TWEEN.Easing.Quartic.Out);
+		.to(tweenTarget, FOCUS_MODE_ANIMATION_DURATION);
+		//.easing(TWEEN.Easing.Quartic.Out);
 	tween.onUpdate(() => {
 		scene.fog.density = tweenValues.fogDensity;
 		Object.assign(camera.position, {x: tweenValues.posX, y: tweenValues.posY, z: tweenValues.posZ});
