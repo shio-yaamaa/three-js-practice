@@ -3,15 +3,16 @@
 
 // Constants
 // Color/Opacity
-const SCENE_BACKGROUND = 0x000000;
+const SCENE_BACKGROUND = 0x101010;
 const DEFAULT_SPRITE_COLOR = 0xffffff;
 const HOVERED_SPRITE_COLOR = 0xe57373;
+const PADDING_COLOR = 0x424242;
 const VISITED_SPRITE_OPACITY = 0.5;
 // Dimension
-const SPRITE_MAX_SIZE = 4;
+const SPRITE_MAX_DIMENSION = 4;
 const FOCUSED_SPRITE_MAX_RATIO = 0.7;
 // Sprite visibility
-const DEFAULT_CAMERA_FAR = 0.1;
+const DEFAULT_CAMERA_NEAR = 0.1;
 const FOG_NEAR = 3;
 const DEFAULT_FOG_FAR = 50;
 const FOG_FAR_IN_FOCUS_MODE = 10;
@@ -30,7 +31,7 @@ document.body.appendChild(container);
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(SCENE_BACKGROUND);
 scene.fog = new THREE.Fog(scene.background, 3, 50);
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, DEFAULT_CAMERA_FAR, 1000);
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, DEFAULT_CAMERA_NEAR, 1000);
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 container.appendChild(renderer.domElement);
@@ -47,6 +48,7 @@ toggleFlyControls(true);
 
 // Raycaster
 const raycaster = new THREE.Raycaster();
+raycaster.near = DEFAULT_CAMERA_NEAR; // to raycast only on visible objects
 raycaster.far = RAYCASTER_FAR;
 let intersected; // save the previously intersected object
 const mouse = new THREE.Vector2();
@@ -77,11 +79,10 @@ for (let i = 0; i < 100; i++) {
 		map: new THREE.TextureLoader().load(
 			`img/${pepperImgNames[i % pepperImgNames.length]}.png`,
 			texture => {
-				if (texture.image.width >= texture.image.height) {
-					sprite.scale.set(SPRITE_MAX_SIZE, texture.image.height * (SPRITE_MAX_SIZE / texture.image.width));
-				} else {
-					sprite.scale.set(texture.image.width * (SPRITE_MAX_SIZE / texture.image.height), SPRITE_MAX_SIZE);
-				}
+				const maxDimension = Math.max(texture.image.height, texture.image.width);
+        maxDimension === texture.image.width
+          ? sprite.scale.set(SPRITE_MAX_DIMENSION, SPRITE_MAX_DIMENSION * (texture.image.height / maxDimension), 1)
+          : sprite.scale.set(SPRITE_MAX_DIMENSION * (texture.image.width / maxDimension), SPRITE_MAX_DIMENSION, 1);
 			}
 		),
 		color: DEFAULT_SPRITE_COLOR,
@@ -90,6 +91,9 @@ for (let i = 0; i < 100; i++) {
 	sprite.position.set(Math.random() * 100 - 50, Math.random() * 100 - 50, Math.random() * 100 - 50);
 	scene.add(sprite);
 }
+
+// Padding of the focusedSprite
+const paddingSprite = new THREE.Sprite(new THREE.SpriteMaterial({color: PADDING_COLOR}));
 
 // Animate and Render
 const animate = () => {
@@ -139,13 +143,28 @@ const focus = zoomIn => {
 	toggleFlyControls(!zoomIn);
 	focusedSprite.material.opacity = zoomIn ? 1 : VISITED_SPRITE_OPACITY;
 	
+	// Padding of the focusedSprite
+	if (zoomIn) {
+		if (Math.min(focusedSprite.scale.x, focusedSprite.scale.y) < SPRITE_MAX_DIMENSION * 0.5) {
+			paddingSprite.position.set(focusedSprite.position.x, focusedSprite.position.y, focusedSprite.position.z);
+			paddingSprite.scale.set(
+				Math.max(focusedSprite.scale.x, SPRITE_MAX_DIMENSION * 0.7),
+				Math.max(focusedSprite.scale.y, SPRITE_MAX_DIMENSION * 0.7),
+				1
+			);
+			scene.add(paddingSprite);
+		}
+	} else {
+		scene.remove(paddingSprite);
+	}
+	
 	// Camera settings
 	const marginToSprite = computeMarginToSprite(
 		renderer.getSize().width, renderer.getSize().height,
 		focusedSprite.scale.x, focusedSprite.scale.y,
 		FOCUSED_SPRITE_MAX_RATIO
 	);
-	camera.far = zoomIn ? marginToSprite : DEFAULT_CAMERA_FAR;
+	camera.near = zoomIn ? marginToSprite : DEFAULT_CAMERA_NEAR;
 	
 	// Make the fog denser; the fog should not affect the focused sprite
 	focusedSprite.material.fog = !zoomIn;
