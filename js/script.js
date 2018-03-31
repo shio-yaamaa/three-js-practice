@@ -7,10 +7,11 @@ const SCENE_BACKGROUND = 0x000000;
 const DEFAULT_SPRITE_COLOR = 0xffffff;
 const HOVERED_SPRITE_COLOR = 0xe57373;
 const VISITED_SPRITE_OPACITY = 0.5;
-// Size
-const DISTANCE_TO_FOCUSED_SPRITE = 3;
+// Dimension
 const SPRITE_MAX_SIZE = 4;
+const FOCUSED_SPRITE_MAX_RATIO = 0.7;
 // Sprite visibility
+const DEFAULT_CAMERA_FAR = 0.1;
 const FOG_NEAR = 3;
 const DEFAULT_FOG_FAR = 50;
 const FOG_FAR_IN_FOCUS_MODE = 10;
@@ -29,7 +30,7 @@ document.body.appendChild(container);
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(SCENE_BACKGROUND);
 scene.fog = new THREE.Fog(scene.background, 3, 50);
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.01/*DISTANCE_TO_FOCUSED_SPRITE*/, 1000);
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, DEFAULT_CAMERA_FAR, 1000);
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 container.appendChild(renderer.domElement);
@@ -38,10 +39,11 @@ container.appendChild(renderer.domElement);
 const flyControls = new THREE.FlyControls(camera, container);
 const clock = new THREE.Clock();
 flyControls.movementSpeed = FLY_CONTROLS_MOVEMENT_SPEED;
-const toggleFlyControlsRolling = activate => {
+const toggleFlyControls = activate => {
+	flyControls.movementSpeed = activate ? FLY_CONTROLS_MOVEMENT_SPEED : 0;
 	flyControls.rollSpeed = activate ? FLY_CONTROLS_ROLL_SPEED : 0;
 };
-toggleFlyControlsRolling(true);
+toggleFlyControls(true);
 
 // Raycaster
 const raycaster = new THREE.Raycaster();
@@ -68,7 +70,7 @@ const subwayImgNames = ['american', 'banana_peppers', 'black_forest_ham', 'black
 const pepperImgNames = ['square_pepper', 'horizontal_pepper', 'vertical_pepper'];
 //const spriteMaps = subwayImgNames.map(name => new THREE.TextureLoader().load(`img/${name}.png`));
 
-for (let i = 0; i < 500; i++) {
+for (let i = 0; i < 100; i++) {
 	const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
 		//map: spriteMaps[i % spriteMaps.length],
 		//map: spriteMaps[Math.floor(Math.random() * spriteMaps.length)],
@@ -88,30 +90,6 @@ for (let i = 0; i < 500; i++) {
 	sprite.position.set(Math.random() * 100 - 50, Math.random() * 100 - 50, Math.random() * 100 - 50);
 	scene.add(sprite);
 }
-
-/*
-const sprite = new THREE.Sprite(new THREE.SpriteMaterial({color: 0xff0000}));
-sprite.position.set(0, 0, -40);
-scene.add(sprite);
-sprite.material.fog = true;
-*/
-
-/*
-const coneGeometry = new THREE.ConeGeometry(2, 5, 8);
-for (let i = 0; i < 100; i++) {
-	const material = new THREE.MeshBasicMaterial({color: parseInt(Math.floor(Math.random() * (16 ** 6)).toString(16), 16)});
-	const cone = new THREE.Mesh(coneGeometry, material);
-	cone.position.set(Math.random() * 100 - 50, Math.random() * 100 - 50, Math.random() * 100 - 50);
-	scene.add(cone);
-}*/
-
-// cone that spins
-/*
-const material = new THREE.MeshBasicMaterial({color: 0xff0000});
-const cone = new THREE.Mesh(coneGeometry, material);
-cone.position.set(14.452969973613492, -13.185255398579756, 19.225105918489447);
-scene.add(cone);
-*/
 
 // Animate and Render
 const animate = () => {
@@ -158,8 +136,16 @@ const focus = zoomIn => {
 	const tweenValues = {};
 	const tweenTarget = {};
 	
-	toggleFlyControlsRolling(!zoomIn);
+	toggleFlyControls(!zoomIn);
 	focusedSprite.material.opacity = zoomIn ? 1 : VISITED_SPRITE_OPACITY;
+	
+	// Camera settings
+	const marginToSprite = computeMarginToSprite(
+		renderer.getSize().width, renderer.getSize().height,
+		focusedSprite.scale.x, focusedSprite.scale.y,
+		FOCUSED_SPRITE_MAX_RATIO
+	);
+	camera.far = zoomIn ? marginToSprite : DEFAULT_CAMERA_FAR;
 	
 	// Make the fog denser; the fog should not affect the focused sprite
 	focusedSprite.material.fog = !zoomIn;
@@ -171,10 +157,8 @@ const focus = zoomIn => {
 		zoomIn ? focusedSprite.position : previousCameraPosition,
 		camera.position
 	);
-	const marginLength = computeMarginToSprite(focusedSprite.scale.y, 0.8);
-	console.log(marginLength);
 	const margin = zoomIn
-		? distance.clone().normalize().multiplyScalar(marginLength/*DISTANCE_TO_FOCUSED_SPRITE*/)
+		? distance.clone().normalize().multiplyScalar(marginToSprite)
 		: new THREE.Vector3();
 	const targetPos = new THREE.Vector3().addVectors(
 		camera.position,
@@ -217,10 +201,11 @@ const focus = zoomIn => {
 	tween.start();
 };
 
-const computeMarginToSprite = (spriteHeight, ratio) => {
-	console.log('spriteHeight', spriteHeight);
-	const visibleHeight = spriteHeight / ratio;
-	return visibleHeight / 2 * Math.tan((camera.fov * Math.PI / 180) / 2);
+const computeMarginToSprite = (screenWidth, screenHeight, spriteWidth, spriteHeight, maxRatio) => {
+	const visibleHeight = (spriteWidth / screenWidth > spriteHeight / screenHeight)
+		? (spriteWidth / maxRatio) / camera.aspect
+		: spriteHeight / maxRatio;
+	return visibleHeight / (2 * Math.tan((camera.fov * Math.PI / 180) / 2));
 };
 
 let wheelTimer;
@@ -248,8 +233,8 @@ window.addEventListener('resize', event => {
 	renderer.setSize(window.innerWidth, window.innerHeight);
 });
 renderer.domElement.addEventListener('mouseleave', () => {
-	toggleFlyControlsRolling(false);
+	toggleFlyControls(false);
 });
 renderer.domElement.addEventListener('mouseenter', () => {
-	focusedSprite || toggleFlyControlsRolling(true);
+	focusedSprite || toggleFlyControls(true);
 });

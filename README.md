@@ -1,8 +1,13 @@
 # Todo
 
 - Make click easier
-- scale sprites and add padding
-- favorite -> transformation
+- Can we use OrbitControls to move camera on wheeling?
+- Can we use spread operator to add multiple objects to the scene at a time?
+    [Example](https://codepen.io/looeee/pen/VbWLeM)
+- Add gray paddings
+- Generate objects as camera moves
+- Amoeba
+- Favorite -> Transformation
 
 # Problems
 
