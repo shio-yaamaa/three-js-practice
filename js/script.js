@@ -59,8 +59,8 @@ window.addEventListener('mousemove', event => {
 
 // Focus
 let focusedSprite;
-let previousCameraPosition = camera.position.clone();
-let previousCameraQuaternion = camera.quaternion.clone();
+let cameraPositionBeforeFocus = camera.position.clone();
+let cameraQuaternionBeforeFocus = camera.quaternion.clone();
 let ongoingFocusTween;
 
 // Create and add Sprites
@@ -72,6 +72,7 @@ const subwayImgNames = ['american', 'banana_peppers', 'black_forest_ham', 'black
 const pepperImgNames = ['square_pepper', 'horizontal_pepper', 'vertical_pepper'];
 //const spriteMaps = subwayImgNames.map(name => new THREE.TextureLoader().load(`img/${name}.png`));
 
+/*
 for (let i = 0; i < 100; i++) {
 	const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
 		//map: spriteMaps[i % spriteMaps.length],
@@ -91,6 +92,43 @@ for (let i = 0; i < 100; i++) {
 	sprite.position.set(Math.random() * 100 - 50, Math.random() * 100 - 50, Math.random() * 100 - 50);
 	scene.add(sprite);
 }
+*/
+
+// Lazy loading setup
+const cameraFromTop = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.01, 1000);
+cameraFromTop.rotation.x = -Math.PI / 2;
+cameraFromTop.position.y = 100;
+
+const BLOCK_SIZE = 10;
+const SPHERE_COUNT_PER_BLOCK = 30;
+const blocks = [];
+const previousCameraBlock = {startX: undefined, startZ: undefined};
+const computeCameraBlock = () => {
+	return {
+		startX: Math.floor(camera.position.x / BLOCK_SIZE) * BLOCK_SIZE,
+		startZ: Math.floor(camera.position.z / BLOCK_SIZE) * BLOCK_SIZE
+	};
+};
+
+const sphereGeometry = new THREE.SphereGeometry(0.3, 32, 32);
+const addSpritesInBlock = (startX, startZ) => {
+	const spritesInBlock = [];
+	for (let i = 0; i < SPHERE_COUNT_PER_BLOCK; i++) {
+		const material = new THREE.MeshBasicMaterial({
+			color: parseInt(Math.floor(Math.random() * (16 ** 6)).toString(16), 16),
+			fog: false
+		});
+		const sphere = new THREE.Mesh(sphereGeometry, material);
+		sphere.position.set(
+			Math.floor(Math.random() * (BLOCK_SIZE + 1)) + startX,
+			Math.random() * 20 - 10,
+			Math.floor(Math.random() * (BLOCK_SIZE + 1)) + startZ
+		);
+		scene.add(sphere);
+		spritesInBlock.push(sphere);
+	}
+	blocks.push({startX: startX, startZ: startZ, sprites: spritesInBlock, validated: true});
+};
 
 // Padding of the focusedSprite
 const paddingSprite = new THREE.Sprite(new THREE.SpriteMaterial({color: PADDING_COLOR}));
@@ -111,10 +149,50 @@ const render = () => {
 		const intersects = raycaster.intersectObjects(scene.children);
 		
   	if (intersected && intersected != intersects[0]) {
-  		intersected.object.material.color.set(DEFAULT_SPRITE_COLOR); // Reset the previously hovered sprite's color
+  		//intersected.object.material.color.set(DEFAULT_SPRITE_COLOR); // Reset the previously hovered sprite's color
   	}
 		intersected = intersects[0];
-		intersected && intersected.object.material.color.set(HOVERED_SPRITE_COLOR);
+		//intersected && intersected.object.material.color.set(HOVERED_SPRITE_COLOR);
+  }
+  
+  // Lazy loading
+  if (!focusedSprite) {
+  	const currentCameraBlock = computeCameraBlock();
+  	if (currentCameraBlock.startX != previousCameraBlock.startX || currentCameraBlock.startZ != previousCameraBlock.startZ) {
+  		console.log('block has been changed');
+  		
+  		blocks.forEach(element => element.validated = false);
+  		
+  		// Add sprites
+			for (let i = 0; i < 9; i++) {
+				const currentBlock = {
+					startX: currentCameraBlock.startX + BLOCK_SIZE * (i % 3 - 1),
+					startZ: currentCameraBlock.startZ + BLOCK_SIZE * (Math.floor(i / 3) - 1)
+				};
+				const isEmptyBlock = blocks.reduce((accumulator, currentElement) => {
+					const isTheSameBlock = currentElement.startX === currentBlock.startX
+						&& currentElement.startZ === currentBlock.startZ;
+					if (isTheSameBlock) {
+						currentElement.validated = true;
+					}
+					return accumulator && !isTheSameBlock;
+				}, true);
+				isEmptyBlock && addSpritesInBlock(currentBlock.startX, currentBlock.startZ);
+			}
+			
+			// Remove sprites
+			let blockIndex = blocks.length - 1;
+			while (blockIndex >= 0) {
+			  if (!blocks[blockIndex].validated) {
+			  	blocks[blockIndex].sprites.forEach(sprite => scene.remove(sprite));
+			    blocks.splice(blockIndex, 1);
+			  }
+			  blockIndex -= 1;
+			}
+  		
+  		Object.assign(previousCameraBlock, currentCameraBlock);
+  		console.log(blocks);
+  	}
   }
 	
 	renderer.render(scene, camera);
@@ -130,8 +208,8 @@ renderer.domElement.addEventListener('mousedown', event => {
   } else if (intersected){ // zoom in
     focusedSprite = intersected.object;
   	focusedSprite.material.color.set(DEFAULT_SPRITE_COLOR);
-    previousCameraPosition = camera.position.clone();
-    previousCameraQuaternion = camera.quaternion.clone();
+    cameraPositionBeforeFocus = camera.position.clone();
+    cameraQuaternionBeforeFocus = camera.quaternion.clone();
     focus(true);
   }
 });
@@ -173,7 +251,7 @@ const focus = zoomIn => {
 	
   // Move the camera
 	const distance = new THREE.Vector3().subVectors(
-		zoomIn ? focusedSprite.position : previousCameraPosition,
+		zoomIn ? focusedSprite.position : cameraPositionBeforeFocus,
 		camera.position
 	);
 	const margin = zoomIn
@@ -186,7 +264,7 @@ const focus = zoomIn => {
 	Object.assign(tweenValues, {posX: camera.position.x, posY: camera.position.y, posZ: camera.position.z});
 	Object.assign(tweenTarget, {posX: targetPos.x, posY: targetPos.y, posZ: targetPos.z});
   
-  // Camera Rotation using Slerp
+  // Rotate the camera
   const originalQuaternion = camera.quaternion.clone();
   let destinationQuaternion;
   if (zoomIn) {
@@ -194,7 +272,7 @@ const focus = zoomIn => {
 	  tempCamera.lookAt(focusedSprite.position);
 	  destinationQuaternion = tempCamera.quaternion.clone();
   } else {
-  	destinationQuaternion = previousCameraQuaternion;
+  	destinationQuaternion = cameraQuaternionBeforeFocus;
   }
   tweenValues.slerpT = 0;
   tweenTarget.slerpT = 1;

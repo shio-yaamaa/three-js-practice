@@ -5,8 +5,8 @@
 - Can we use spread operator to add multiple objects to the scene at a time?
     [Example](https://codepen.io/looeee/pen/VbWLeM)
 - Add gray paddings - Should I move the padding a bit?
-- Generate objects as camera moves
-- Amoeba
+- Lazy load
+- Amoeba (animation can be loaded from Blender)
 - Favorite -> Transformation
 
 # Problems
