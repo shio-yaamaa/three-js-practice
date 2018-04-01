@@ -1,5 +1,7 @@
+/* global $ */
 /* global THREE */
 /* global TWEEN */
+/* global Region */
 
 // Constants
 // Color/Opacity
@@ -11,11 +13,15 @@ const VISITED_SPRITE_OPACITY = 0.5;
 // Dimension
 const SPRITE_MAX_DIMENSION = 4;
 const FOCUSED_SPRITE_MAX_RATIO = 0.7;
+// Region
+const REGION_SIZE = 50;
+const SPRITE_COUNT_PER_REGION = 40;
 // Sprite visibility
-const DEFAULT_CAMERA_NEAR = 0.1;
+const DEFAULT_CAMERA_NEAR = 3;
 const FOG_NEAR = 3;
 const DEFAULT_FOG_FAR = 50;
 const FOG_FAR_IN_FOCUS_MODE = 10;
+const RAYCASTER_NEAR = 0.1; // to raycast only on visible objects
 const RAYCASTER_FAR = 45;
 // Animation
 const FLY_CONTROLS_MOVEMENT_SPEED = 30;
@@ -48,7 +54,7 @@ toggleFlyControls(true);
 
 // Raycaster
 const raycaster = new THREE.Raycaster();
-raycaster.near = DEFAULT_CAMERA_NEAR; // to raycast only on visible objects
+raycaster.near = RAYCASTER_NEAR;
 raycaster.far = RAYCASTER_FAR;
 let intersected; // save the previously intersected object
 const mouse = new THREE.Vector2();
@@ -99,35 +105,14 @@ const cameraFromTop = new THREE.PerspectiveCamera(75, window.innerWidth / window
 cameraFromTop.rotation.x = -Math.PI / 2;
 cameraFromTop.position.y = 100;
 
-const BLOCK_SIZE = 10;
-const SPHERE_COUNT_PER_BLOCK = 30;
-const blocks = [];
-const previousCameraBlock = {startX: undefined, startZ: undefined};
-const computeCameraBlock = () => {
+const regions = [];
+const previousCameraRegion = {x: undefined, y: undefined, z: undefined};
+const computeCameraRegion = () => {
 	return {
-		startX: Math.floor(camera.position.x / BLOCK_SIZE) * BLOCK_SIZE,
-		startZ: Math.floor(camera.position.z / BLOCK_SIZE) * BLOCK_SIZE
+		x: Math.floor(camera.position.x / REGION_SIZE) * REGION_SIZE,
+		y: Math.floor(camera.position.y / REGION_SIZE) * REGION_SIZE,
+		z: Math.floor(camera.position.z / REGION_SIZE) * REGION_SIZE
 	};
-};
-
-const sphereGeometry = new THREE.SphereGeometry(0.3, 32, 32);
-const addSpritesInBlock = (startX, startZ) => {
-	const spritesInBlock = [];
-	for (let i = 0; i < SPHERE_COUNT_PER_BLOCK; i++) {
-		const material = new THREE.MeshBasicMaterial({
-			color: parseInt(Math.floor(Math.random() * (16 ** 6)).toString(16), 16),
-			fog: false
-		});
-		const sphere = new THREE.Mesh(sphereGeometry, material);
-		sphere.position.set(
-			Math.floor(Math.random() * (BLOCK_SIZE + 1)) + startX,
-			Math.random() * 20 - 10,
-			Math.floor(Math.random() * (BLOCK_SIZE + 1)) + startZ
-		);
-		scene.add(sphere);
-		spritesInBlock.push(sphere);
-	}
-	blocks.push({startX: startX, startZ: startZ, sprites: spritesInBlock, validated: true});
 };
 
 // Padding of the focusedSprite
@@ -153,45 +138,57 @@ const render = () => {
   	}
 		intersected = intersects[0];
 		//intersected && intersected.object.material.color.set(HOVERED_SPRITE_COLOR);
+		
+		renderer.domElement.style.cursor = intersected ? 'pointer' : 'default';
   }
   
   // Lazy loading
   if (!focusedSprite) {
-  	const currentCameraBlock = computeCameraBlock();
-  	if (currentCameraBlock.startX != previousCameraBlock.startX || currentCameraBlock.startZ != previousCameraBlock.startZ) {
-  		console.log('block has been changed');
+  	const currentCameraRegion = computeCameraRegion();
+  	if (currentCameraRegion.x != previousCameraRegion.x
+  		|| currentCameraRegion.y != previousCameraRegion.y
+  		|| currentCameraRegion.z != previousCameraRegion.z) {
+  		console.log('region changed!');
   		
-  		blocks.forEach(element => element.validated = false);
+  		regions.forEach(element => element.shouldRemain = false);
   		
   		// Add sprites
-			for (let i = 0; i < 9; i++) {
-				const currentBlock = {
-					startX: currentCameraBlock.startX + BLOCK_SIZE * (i % 3 - 1),
-					startZ: currentCameraBlock.startZ + BLOCK_SIZE * (Math.floor(i / 3) - 1)
+			for (let i = 0; i < 27; i++) {
+				const currentRegion = { // -1 is to make currentCameraRegion center
+					x: currentCameraRegion.x + REGION_SIZE * (Math.floor(i / 9) - 1),
+					y: currentCameraRegion.y + REGION_SIZE * (Math.floor(i / 3) % 3 - 1),
+					z: currentCameraRegion.z + REGION_SIZE * (i % 3 - 1)
 				};
-				const isEmptyBlock = blocks.reduce((accumulator, currentElement) => {
-					const isTheSameBlock = currentElement.startX === currentBlock.startX
-						&& currentElement.startZ === currentBlock.startZ;
+				const isEmptyRegion = regions.reduce((accumulator, currentElement) => {
+					const isTheSameBlock = currentElement.x === currentRegion.x
+						&& currentElement.y === currentRegion.y
+						&& currentElement.z === currentRegion.z;
 					if (isTheSameBlock) {
-						currentElement.validated = true;
+						currentElement.shouldRemain = true;
 					}
 					return accumulator && !isTheSameBlock;
 				}, true);
-				isEmptyBlock && addSpritesInBlock(currentBlock.startX, currentBlock.startZ);
+				isEmptyRegion && regions.push(
+					new Region(
+						scene,
+						new THREE.Vector3(currentRegion.x, currentRegion.y, currentRegion.z),
+						REGION_SIZE,
+						SPRITE_COUNT_PER_REGION
+					)
+				);
 			}
 			
 			// Remove sprites
-			let blockIndex = blocks.length - 1;
-			while (blockIndex >= 0) {
-			  if (!blocks[blockIndex].validated) {
-			  	blocks[blockIndex].sprites.forEach(sprite => scene.remove(sprite));
-			    blocks.splice(blockIndex, 1);
+			let regionIndex = regions.length - 1;
+			while (regionIndex >= 0) {
+			  if (!regions[regionIndex].shouldRemain) {
+			  	regions[regionIndex].sprites.forEach(sprite => scene.remove(sprite));
+			    regions.splice(regionIndex, 1);
 			  }
-			  blockIndex -= 1;
+			  regionIndex -= 1;
 			}
   		
-  		Object.assign(previousCameraBlock, currentCameraBlock);
-  		console.log(blocks);
+  		Object.assign(previousCameraRegion, currentCameraRegion);
   	}
   }
 	
@@ -242,7 +239,8 @@ const focus = zoomIn => {
 		focusedSprite.scale.x, focusedSprite.scale.y,
 		FOCUSED_SPRITE_MAX_RATIO
 	);
-	camera.near = zoomIn ? marginToSprite : DEFAULT_CAMERA_NEAR;
+	camera.near = zoomIn ? marginToSprite * 0.8 : DEFAULT_CAMERA_NEAR;
+	camera.updateProjectionMatrix();
 	
 	// Make the fog denser; the fog should not affect the focused sprite
 	focusedSprite.material.fog = !zoomIn;
