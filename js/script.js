@@ -1,7 +1,6 @@
-/* global $ */
 /* global THREE */
 /* global TWEEN */
-/* global Region */
+/* global SphericalLoading */
 
 // Fly controls container
 const container = document.createElement('div');
@@ -11,10 +10,25 @@ document.body.appendChild(container);
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(SCENE_BACKGROUND);
 scene.fog = new THREE.Fog(scene.background, 3, DEFAULT_FOG_FAR);
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, DEFAULT_CAMERA_NEAR, DEFAULT_FOG_FAR);
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, DEFAULT_CAMERA_NEAR, CAMERA_FAR);
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 container.appendChild(renderer.domElement);
+
+// Visualize the main camera
+/*
+const cameraHelper = new THREE.CameraHelper(camera);
+scene.add(cameraHelper);
+const cameraRig = new THREE.Group();
+cameraRig.add(camera);
+scene.add(cameraRig);
+*/
+
+// Camera from top
+const cameraFromTop = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.01, 1000);
+cameraFromTop.position.set(0, 100, 0);
+cameraFromTop.rotation.set(-Math.PI / 2, 0, 0);
+console.log(cameraFromTop.rotation);
 
 // FlyControls
 const flyControls = new THREE.FlyControls(camera, container);
@@ -32,20 +46,12 @@ raycaster.near = RAYCASTER_NEAR;
 raycaster.far = RAYCASTER_FAR;
 let intersected; // save the previously intersected object
 const mouse = new THREE.Vector2();
-window.addEventListener('mousemove', event => {
-	mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-	mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-}, false);
 
 // Focus
 let focusedSprite;
-let cameraPositionBeforeFocus = camera.position.clone();
-let cameraQuaternionBeforeFocus = camera.quaternion.clone();
+let cameraPositionBeforeFocus;
+let cameraQuaternionBeforeFocus;
 let ongoingFocusTween;
-
-const sprite = new THREE.Sprite(new THREE.SpriteMaterial({color: 0xff0000}));
-sprite.position.set(0, 0, -3);
-scene.add(sprite);
 
 // Create and add Sprites
 const subwayImgNames = ['american', 'banana_peppers', 'black_forest_ham', 'black_olives', 'chipotle_southwest',
@@ -78,20 +84,17 @@ for (let i = 0; i < 100; i++) {
 }
 */
 
-// Lazy loading setup
-const cameraFromTop = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.01, 1000);
-cameraFromTop.rotation.x = -Math.PI / 2;
-cameraFromTop.position.y = 100;
-
-const regions = [];
-const previousCameraRegion = {x: undefined, y: undefined, z: undefined};
-const computeCameraRegion = () => {
-	return {
-		x: Math.floor(camera.position.x / REGION_SIZE) * REGION_SIZE,
-		y: Math.floor(camera.position.y / REGION_SIZE) * REGION_SIZE,
-		z: Math.floor(camera.position.z / REGION_SIZE) * REGION_SIZE
-	};
-};
+// SphericalLoading setup
+const sphericalLoading = new SphericalLoading(
+	scene,
+	SPAWN_RADIUS,
+	VIEW_RADIUS,
+	new THREE.Vector3().addVectors(
+		camera.position,
+		new THREE.Vector3(VIEW_RADIUS * 2, VIEW_RADIUS * 2, VIEW_RADIUS * 2)
+	), // Initialize far from camera to spawn on start
+	SPRITE_COUNT_PER_LOAD
+);
 
 // Animate and Render
 const animate = () => {
@@ -102,6 +105,9 @@ const animate = () => {
 const render = () => {
 	TWEEN.update();
   flyControls.update(clock.getDelta());
+  if (!focusedSprite) {
+  	sphericalLoading.update(camera.position);
+  }
   
   // Change the hovered sprite's color
   if (!focusedSprite) {
@@ -116,63 +122,14 @@ const render = () => {
 		
 		renderer.domElement.style.cursor = intersected ? 'pointer' : 'default';
   }
-  
-  // Lazy loading
-  if (!focusedSprite) {
-  	const currentCameraRegion = computeCameraRegion();
-  	if (currentCameraRegion.x != previousCameraRegion.x
-  		|| currentCameraRegion.y != previousCameraRegion.y
-  		|| currentCameraRegion.z != previousCameraRegion.z) {
-  		console.log('region changed!');
-  		
-  		regions.forEach(element => element.shouldRemain = false);
-  		
-  		// Add sprites
-			for (let i = 0; i < 27; i++) {
-				const currentRegion = { // -1 is to make currentCameraRegion center
-					x: currentCameraRegion.x + REGION_SIZE * (Math.floor(i / 9) - 1),
-					y: currentCameraRegion.y + REGION_SIZE * (Math.floor(i / 3) % 3 - 1),
-					z: currentCameraRegion.z + REGION_SIZE * (i % 3 - 1)
-				};
-				const isEmptyRegion = regions.reduce((accumulator, currentElement) => {
-					const isTheSameRegion = currentElement.position.x === currentRegion.x
-						&& currentElement.position.y === currentRegion.y
-						&& currentElement.position.z === currentRegion.z;
-					if (isTheSameRegion) {
-						currentElement.shouldRemain = true;
-					}
-					return accumulator && !isTheSameRegion;
-				}, true);
-				isEmptyRegion && regions.push(
-					new Region(
-						scene,
-						new THREE.Vector3(currentRegion.x, currentRegion.y, currentRegion.z),
-						REGION_SIZE,
-						SPRITE_COUNT_PER_REGION
-					)
-				);
-			}
-			
-			// Remove sprites
-			let regionIndex = regions.length - 1;
-			while (regionIndex >= 0) {
-			  if (!regions[regionIndex].shouldRemain) {
-			  	regions[regionIndex].sprites.forEach(sprite => scene.remove(sprite));
-			    regions.splice(regionIndex, 1);
-			  }
-			  regionIndex -= 1;
-			}
-  		
-  		Object.assign(previousCameraRegion, currentCameraRegion);
-  	}
-  }
 	
-	renderer.render(scene, camera);
+	renderer.render(scene, cameraFromTop);
 };
 
 animate();
 
 // Click event
+setMouseMoveListener();
 setMousedownListener();
 setWheelListener();
 setWindowListener();

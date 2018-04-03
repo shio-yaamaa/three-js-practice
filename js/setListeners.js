@@ -1,3 +1,11 @@
+// Update mouse position for raycasting
+const setMouseMoveListener = () => {
+  window.addEventListener('mousemove', event => {
+  	mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  	mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+  }, false);
+};
+
 const setMousedownListener = () => {
   const computeMarginToSprite = (screenWidth, screenHeight, spriteWidth, spriteHeight, maxRatio) => {
   	const visibleHeight = (spriteWidth / screenWidth > spriteHeight / screenHeight)

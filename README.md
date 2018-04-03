@@ -11,6 +11,7 @@
 # Problems
 
 - Sprites can overlap
+- Remove doesn't work sometimes
 
 # Asynchronous sprite manipulation
 
