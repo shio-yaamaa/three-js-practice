@@ -3,6 +3,7 @@
 class Region {
   constructor(scene, position, size, spriteCount) {
     this.scene = scene;
+    this.position = position;
     this.sprites = this.createSprites(scene, position, size, spriteCount);
     this.shouldRemain = true;
   }
@@ -29,5 +30,8 @@ class Region {
     this.sprites.forEach(sprite => {
       this.scene.remove(sprite);
     });
+  }
+  updateNextRegions(nextRegions) {
+    
   }
 }
