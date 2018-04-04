@@ -15,21 +15,6 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 container.appendChild(renderer.domElement);
 
-// Visualize the main camera
-/*
-const cameraHelper = new THREE.CameraHelper(camera);
-scene.add(cameraHelper);
-const cameraRig = new THREE.Group();
-cameraRig.add(camera);
-scene.add(cameraRig);
-*/
-
-// Camera from top
-const cameraFromTop = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.01, 1000);
-cameraFromTop.position.set(0, 100, 0);
-cameraFromTop.rotation.set(-Math.PI / 2, 0, 0);
-console.log(cameraFromTop.rotation);
-
 // FlyControls
 const flyControls = new THREE.FlyControls(camera, container);
 const clock = new THREE.Clock();
@@ -53,37 +38,6 @@ let cameraPositionBeforeFocus;
 let cameraQuaternionBeforeFocus;
 let ongoingFocusTween;
 
-// Create and add Sprites
-const subwayImgNames = ['american', 'banana_peppers', 'black_forest_ham', 'black_olives', 'chipotle_southwest',
- 'cucumbers', 'flatbread', 'green_peppers', 'italian', 'italian_bmt', 'italian_herbs_and_cheese',
- 'jalapenos', 'lettuce', 'mayonnaise', 'meatball_marinara', 'monterey_cheddar', 'multi_grain_flatbread',
- 'mustard', 'nine_grain_wheat', 'oil', 'oven_roasted_chicken', 'pickles', 'ranch', 'red_onions', 'spinach',
- 'sweet_onion', 'sweet_onion_chicken_teriyaki', 'tomatoes', 'tuna', 'turkey_breast', 'vinaigrette', 'vinegar'];
-const pepperImgNames = ['square_pepper', 'horizontal_pepper', 'vertical_pepper'];
-//const spriteMaps = subwayImgNames.map(name => new THREE.TextureLoader().load(`img/${name}.png`));
-
-/*
-for (let i = 0; i < 100; i++) {
-	const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
-		//map: spriteMaps[i % spriteMaps.length],
-		//map: spriteMaps[Math.floor(Math.random() * spriteMaps.length)],
-		map: new THREE.TextureLoader().load(
-			`img/${pepperImgNames[i % pepperImgNames.length]}.png`,
-			texture => {
-				const maxDimension = Math.max(texture.image.height, texture.image.width);
-        maxDimension === texture.image.width
-          ? sprite.scale.set(SPRITE_MAX_DIMENSION, SPRITE_MAX_DIMENSION * (texture.image.height / maxDimension), 1)
-          : sprite.scale.set(SPRITE_MAX_DIMENSION * (texture.image.width / maxDimension), SPRITE_MAX_DIMENSION, 1);
-			}
-		),
-		color: DEFAULT_SPRITE_COLOR,
-		fog: true
-	}));
-	sprite.position.set(Math.random() * 100 - 50, Math.random() * 100 - 50, Math.random() * 100 - 50);
-	scene.add(sprite);
-}
-*/
-
 // SphericalLoading setup
 const sphericalLoading = new SphericalLoading(
 	scene,
@@ -96,6 +50,24 @@ const sphericalLoading = new SphericalLoading(
 	SPRITE_COUNT_PER_LOAD
 );
 
+// Gif test
+//const imgDom = document.getElementById('seyakate');
+//const superGif = new SuperGif({gif: imgDom});
+//document.body.removeChild(imgDom);
+//superGif.load();
+//planeMaterial.map = new THREE.Texture(superGif.get_canvas());
+//planeMaterial.displacementMap = planeMaterial.map;
+const planeGeometry = new THREE.PlaneGeometry(5, 5, 32);
+const planeMaterial = new THREE.MeshBasicMaterial({
+	map: new Texture('img/seyakate.gif'),
+	color: 0xffffff,
+	side: THREE.DoubleSide
+});
+console.log(planeMaterial);
+const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+plane.position.set(0, 0, -10);
+scene.add(plane);
+
 // Animate and Render
 const animate = () => {
 	requestAnimationFrame(animate);
@@ -103,6 +75,11 @@ const animate = () => {
 };
 
 const render = () => {
+	//planeMaterial.map.needsUpdate = true;
+	//planeMaterial.displacementScale = 200;
+	//planeMaterial.displacementMap.needsUpdate = true;
+	//planeMaterial.map.needsUpdate = true;
+	
 	TWEEN.update();
   flyControls.update(clock.getDelta());
   if (!focusedSprite) {
@@ -115,15 +92,15 @@ const render = () => {
 		const intersects = raycaster.intersectObjects(scene.children);
 		
   	if (intersected && intersected != intersects[0]) {
-  		//intersected.object.material.color.set(DEFAULT_SPRITE_COLOR); // Reset the previously hovered sprite's color
+  		intersected.object.material.color.set(DEFAULT_SPRITE_COLOR); // Reset the previously hovered sprite's color
   	}
 		intersected = intersects[0];
-		//intersected && intersected.object.material.color.set(RAYCASTED_SPRITE_COLOR);
+		intersected && intersected.object.material.color.set(RAYCASTED_SPRITE_COLOR);
 		
 		renderer.domElement.style.cursor = intersected ? 'pointer' : 'default';
   }
 	
-	renderer.render(scene, cameraFromTop);
+	renderer.render(scene, camera);
 };
 
 animate();

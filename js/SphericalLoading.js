@@ -8,6 +8,7 @@ class SphericalLoading {
     this.previousSphereCenter = initialSphereCenter;
     this.spriteCount = spriteCount;
     this.geometry = new THREE.SphereGeometry(0.3, 6, 6);
+    this.map = new THREE.TextureLoader().load('img/seyakate.gif');
   }
   
   randomPositionInSquare (position, radius) {
@@ -26,35 +27,29 @@ class SphericalLoading {
 				continue;
 			}
 		  const material = new THREE.MeshBasicMaterial({
-		  	color: parseInt(Math.floor(Math.random() * (16 ** 6)).toString(16), 16),
-		  	fog: false
+		  	color: parseInt(Math.floor(Math.random() * (16 ** 6)).toString(16), 16)
 		  });
-		  const sphere = new THREE.Mesh(this.geometry, material);
-		  Object.assign(sphere.position, randomPosition);
-		  this.scene.add(sphere);
+		  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
+    		map: this.map,
+    		color: 0xffffff,
+    		fog: true
+    	}));
+    	sprite.scale.set(4, 4, 1);
+		  Object.assign(sprite.position, randomPosition);
+		  this.scene.add(sprite);
 		}
   }
   
   removeSprites (currentCameraPosition) {
-    console.log(this.scene.children.length);
 		this.scene.children.forEach(element => {
 			if (element.position.distanceTo(currentCameraPosition) > this.spawnRadius) {
 				this.scene.remove(element);
 			}
 		});
-		console.log(this.scene.children.length);
-		/*
-		console.log(currentCameraPosition);
-		console.log(this.scene.children.map(element => {
-		  if (element.position.distanceTo(currentCameraPosition) > this.spawnRadius) {
-		    return element.position;
-		  }
-		}));*/
   }
   
   update(currentCameraPosition) {
   	if (currentCameraPosition.distanceTo(this.previousSphereCenter) > this.viewRadius) {
-  		console.log('Sphere changed');
   		this.addSprites(currentCameraPosition);
   		this.removeSprites(currentCameraPosition);
   		Object.assign(this.previousSphereCenter, currentCameraPosition);
