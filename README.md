@@ -1,8 +1,7 @@
 # Todo
 
-- gif support
+- animation
 - file.IO
-- Asynchronous addition and deletion
 - sidebar
 
 - Can we make the adding and removing process asynchronous? (When addtion is finished, removal starts)
@@ -16,6 +15,7 @@
 
 - Sprites can overlap
 - Remove doesn't work sometimes
+- If we set the background, fog would look weird
 
 # Animate sprites
 

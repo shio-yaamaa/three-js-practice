@@ -8,14 +8,6 @@ class SphericalLoading {
     this.previousSphereCenter = initialSphereCenter;
     this.spriteCount = spriteCount;
     this.geometry = new THREE.SphereGeometry(0.3, 6, 6);
-    
-    // Animation test
-    this.map = new THREE.TextureLoader().load('sauces_transparent.png');
-    const frameCount = 8;
-    this.map.repeat.x = 1 / frameCount;
-    setInterval(() => {
-      this.map.offset.x = (this.map.offset.x + 1 / frameCount) % (1 - 1 / frameCount)
-    }, 100);
   }
   
   randomPositionInSquare(position, radius) {
@@ -33,14 +25,16 @@ class SphericalLoading {
 				|| randomPosition.distanceTo(this.previousSphereCenter) < this.spawnRadius) { // condition to reject
 				continue;
 			}
-		  const material = new THREE.MeshBasicMaterial({
-		  	color: parseInt(Math.floor(Math.random() * (16 ** 6)).toString(16), 16)
-		  });
+      const frameCount = 8;
 		  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
-    		map: this.map,
+    		map: new THREE.TextureLoader().load('img/mamuker/d.png'),
     		color: 0xffffff,
     		fog: true
     	}));
+    	//sprite.material.map.repeat.x = 1 / frameCount;
+      /*setInterval(() => {
+        sprite.material.map.offset.x = (sprite.material.map.offset.x + 1 / frameCount) % (1 - 1 / frameCount)
+      }, 100);*/
     	sprite.scale.set(4, 4, 1);
 		  Object.assign(sprite.position, randomPosition);
 		  this.scene.add(sprite);
@@ -57,9 +51,18 @@ class SphericalLoading {
   
   update(currentCameraPosition) {
   	if (currentCameraPosition.distanceTo(this.previousSphereCenter) > this.viewRadius) {
-  		this.addSprites(currentCameraPosition);
-  		this.removeSprites(currentCameraPosition);
-  		Object.assign(this.previousSphereCenter, currentCameraPosition);
+  	  const asyncAddSprites = () => {
+      	return new Promise((resolve, reject) => {
+        	this.addSprites(currentCameraPosition);
+        	console.log('add sprites done');
+        	resolve();
+        });
+      };
+      asyncAddSprites().then(() => {
+      	this.removeSprites(currentCameraPosition);
+      	console.log('remove sprites done');
+      	Object.assign(this.previousSphereCenter, currentCameraPosition);
+      });
   	}
   }
 }
