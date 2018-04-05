@@ -57,9 +57,10 @@ const sphericalLoading = new SphericalLoading(
 //superGif.load();
 //planeMaterial.map = new THREE.Texture(superGif.get_canvas());
 //planeMaterial.displacementMap = planeMaterial.map;
+/*
 const planeGeometry = new THREE.PlaneGeometry(5, 5, 32);
 const planeMaterial = new THREE.MeshBasicMaterial({
-	map: new Texture('img/seyakate.gif'),
+	map: new Texture('google.gif'),
 	color: 0xffffff,
 	side: THREE.DoubleSide
 });
@@ -67,6 +68,7 @@ console.log(planeMaterial);
 const plane = new THREE.Mesh(planeGeometry, planeMaterial);
 plane.position.set(0, 0, -10);
 scene.add(plane);
+*/
 
 // Animate and Render
 const animate = () => {
@@ -105,7 +107,7 @@ const render = () => {
 
 animate();
 
-// Click event
+// User interaction events
 setMouseMoveListener();
 setMousedownListener();
 setWheelListener();

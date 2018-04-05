@@ -38,4 +38,4 @@ const FLY_CONTROLS_ROLL_SPEED = Math.PI / 5; // Math.PI / 6;
 // SphericalLoading
 const SPAWN_RADIUS = CAMERA_FAR * 2
 const VIEW_RADIUS = SPAWN_RADIUS * 0.5;
-const SPRITE_COUNT_PER_LOAD = 500;
+const SPRITE_COUNT_PER_LOAD = 1000;

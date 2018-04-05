@@ -8,10 +8,17 @@ class SphericalLoading {
     this.previousSphereCenter = initialSphereCenter;
     this.spriteCount = spriteCount;
     this.geometry = new THREE.SphereGeometry(0.3, 6, 6);
-    this.map = new THREE.TextureLoader().load('img/seyakate.gif');
+    
+    // Animation test
+    this.map = new THREE.TextureLoader().load('sauces_transparent.png');
+    const frameCount = 8;
+    this.map.repeat.x = 1 / frameCount;
+    setInterval(() => {
+      this.map.offset.x = (this.map.offset.x + 1 / frameCount) % (1 - 1 / frameCount)
+    }, 100);
   }
   
-  randomPositionInSquare (position, radius) {
+  randomPositionInSquare(position, radius) {
   	return new THREE.Vector3(
   		THREE.Math.randFloatSpread(radius * 2) + position.x,
   		THREE.Math.randFloatSpread(radius * 2) + position.y,
@@ -19,7 +26,7 @@ class SphericalLoading {
   	);
   }
   
-  addSprites (currentCameraPosition) {
+  addSprites(currentCameraPosition) {
 		for (let i = 0; i < this.spriteCount; i++) {
 			const randomPosition = this.randomPositionInSquare(currentCameraPosition, this.spawnRadius);
 			if (randomPosition.distanceTo(currentCameraPosition) > this.spawnRadius
@@ -40,7 +47,7 @@ class SphericalLoading {
 		}
   }
   
-  removeSprites (currentCameraPosition) {
+  removeSprites(currentCameraPosition) {
 		this.scene.children.forEach(element => {
 			if (element.position.distanceTo(currentCameraPosition) > this.spawnRadius) {
 				this.scene.remove(element);
