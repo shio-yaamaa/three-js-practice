@@ -11,7 +11,7 @@ const setMousedownListener = () => {
   	const visibleHeight = (spriteWidth / screenWidth > spriteHeight / screenHeight)
   		? (spriteWidth / maxRatio) / camera.aspect
   		: spriteHeight / maxRatio;
-  	return visibleHeight / (2 * Math.tan((camera.fov * Math.PI / 180) / 2));
+  	return visibleHeight / (2 * Math.tan(THREE.Math.degToRad(camera.fov) / 2));
   };
   
   const focus = zoomIn => {

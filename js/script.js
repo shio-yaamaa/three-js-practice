@@ -8,10 +8,11 @@ document.body.appendChild(container);
 
 // Scene, Camera, Renderer
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(SCENE_BACKGROUND);
-scene.fog = new THREE.Fog(scene.background, 3, DEFAULT_FOG_FAR);
+//scene.background = new THREE.Color(SCENE_BACKGROUND);
+//scene.background = new THREE.TextureLoader().load('img/universe_background.jpg');
+scene.fog = new THREE.Fog(0x666666/*scene.background*/, 3, DEFAULT_FOG_FAR);
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, DEFAULT_CAMERA_NEAR, CAMERA_FAR);
-const renderer = new THREE.WebGLRenderer();
+const renderer = new THREE.WebGLRenderer({alpha: true});
 renderer.setSize(window.innerWidth, window.innerHeight);
 container.appendChild(renderer.domElement);
 

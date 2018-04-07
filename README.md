@@ -1,5 +1,6 @@
 # Todo
 
+- background (if the background never changes, setting it as body's background would reduce the render efficiency)
 - animation
 - file.IO
 - sidebar
@@ -57,18 +58,3 @@ I don't know if it is more efficient to use tween.
 ## Just rotate and resize the sprites
 
 The most efficient but not flexible
-
-# Asynchronous sprite manipulation
-
-```javascript
-const addSprites = () => {
-	return new Promise((resolve, reject) => {
-  	console.log('adding sprites');
-  	resolve();
-  });
-};
-
-addSprites().then(() => {
-	console.log('removing sprites');
-});
-```
