@@ -1,9 +1,12 @@
 # Todo
 
-- background (if the background never changes, setting it as body's background would reduce the render efficiency)
+- background (if the background never changes, setting it as body's background would increase the render efficiency)
 - animation
 - file.IO
 - sidebar
+
+- When the camera moves in the world view, there appears a hall in the middle of the screen.
+- [Panorama Viewer using Three.js](http://www.emanueleferonato.com/2014/12/10/html5-webgl-360-degrees-panorama-viewer-with-three-js/)
 
 - Can we make the adding and removing process asynchronous? (When addtion is finished, removal starts)
 - Make click easier
@@ -18,11 +21,13 @@
 - Remove doesn't work sometimes
 - If we set the background, fog would look weird
 
+- Fast mouse move -> Disable camera rotation for 0.25 seconds. Didn't work probably because of the way to set the timer.
+
 # Animate sprites
 
 ## Use libraries with gif support
 
-GLGif (https://github.com/JordiRos/GLGif): The official examples doesn't work.
+GLGif (https://github.com/JordiRos/GLGif): The official examples don't work.
 
 SuperGif: Requires an <img> dom element. Shows a big animating svg image and nothing else.
   [examle](http://www.desolidstate.com/gif-canv-txtr.html)
