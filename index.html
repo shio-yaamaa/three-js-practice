@@ -3,29 +3,49 @@
 	<head>
 		<meta charset="utf-8">
 		<title>Universe</title>
-		<link rel="stylesheet" type="text/css" href="css/universe/style.css">
+		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.10/css/all.css" integrity="sha384-+d0P83n9kaQMCwj8F4RJB66tzIwOKmrdb46+porD/OvrJ+37WqIM7UoBtwHO6Nlg" crossorigin="anonymous">
+		<link rel="stylesheet" type="text/css" href="css/universe.css">
 	</head>
 	<body>
+		<!--<div id="universe_favorite_button">★</div>-->
 		<!--<div id="zoom_menu_container">
-			<div id="zoom_menu_left">
-				<p>favorite button</p>
-			</div>
+			<div id="zoom_menu_left"></div>
 			<div id="zoom_menu_main">
-				<p>main</p>
+				<div id="world_list">
+					<div class="world">
+						<img src="img/world_thumbnail/cave.jpg" />
+						<img src="img/world_thumbnail/bubble.png" />
+					</div>
+					<div class="world">
+						<img src="img/world_thumbnail/shrine.jpg" />
+						<img src="img/world_thumbnail/bubble.png" />
+					</div>
+					<div class="world">
+						<img src="img/world_thumbnail/evening.jpg" />
+						<img src="img/world_thumbnail/bubble.png" />
+					</div>
+					<div class="world">
+						<img src="img/world_thumbnail/sakura.jpg" />
+						<img src="img/world_thumbnail/bubble.png" />
+					</div>
+				</div>
 			</div>
 			<div id="zoom_menu_right">
-				<p>right menu</p>
+				<i class="fas fa-home"></i>
+				<i class="far fa-map"></i>
+				<i class="fas fa-comment-dots"></i>
+				<i class="fas fa-edit"></i>
 			</div>
 		</div>-->
 		
-		<script src="lib/jquery-3.3.1.slim.min.js"></script>
-		<script src="lib/mouse-speed.js"></script>
-		<script src="lib/three.min.js"></script>
-		<script src="lib/FlyControls.js"></script>
-		<script src="lib/FirstPersonControls.js"></script>
-		<script src="lib/Tween.js"></script>
+		<script src="js/lib/jquery-3.3.1.slim.min.js"></script>
+		<script src="js/lib/three.min.js"></script>
+		<script src="js/lib/FlyControls.js"></script>
+		<script src="js/lib/FirstPersonControls.js"></script>
+		<script src="js/lib/Tween.js"></script>
 		
 		<script src="js/universe/constants.js"></script>
+		<script src="js/data.js"></script>
 		<script src="js/universe/SphericalLoading.js"></script>
 		<script src="js/universe/setListeners.js"></script>
 		<script src="js/universe/main.js"></script>

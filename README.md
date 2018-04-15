@@ -1,6 +1,16 @@
+# How to get the information of focusedSprite?
+
+When creating new sprites, set properties "mamukType" and "mamukData"??
+
+or
+
+Create a dictionary that maps the object's ID (automatically assigned) to its data.
+It's a bit tedious because we have to remove the elements in the dictionary when removing the sprites.
+
 # Todo
 
-- background (if the background never changes, setting it as body's background would increase the render efficiency)
+- Icon License
+
 - animation
 - file.IO
 - sidebar
@@ -18,8 +28,7 @@
 # Problems
 
 - Sprites can overlap
-- Remove doesn't work sometimes
-- If we set the background, fog would look weird
+- Removal of sprites sometimes doesn't work
 
 - Fast mouse move -> Disable camera rotation for 0.25 seconds. Didn't work probably because of the way to set the timer.
 

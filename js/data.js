@@ -2,27 +2,43 @@ const data = {
   worlds: [
     {
       id: 'sea',
-      backgroundImage: './img/world_background/sea.png',
+      backgroundImage: 'img/world_background/sea.png',
       characters: ['jerryfish', 'fish'],
       noncharacters: ['weaweed00']
     }
   ],
   characters: [
     {
-      id: 'jerryfish',
-      image: './img/character/jerryfish.png',
-      name: 'Bob',
+      id: 'festival',
+      image: 'img/mamuker/festival.png',
+      name: 'Festival',
       like: ['fish', 'apples'],
       dislike: ['computers', 'cucumbers'],
       wish: ['to fly']
     },
     {
-      id: 'fish',
-      image: './img/character/fish.png',
-      name: 'Alice',
+      id: 'jelly',
+      image: 'img/mamuker/jelly.png',
+      name: 'Jelly',
+      like: ['fish', 'apples'],
+      dislike: ['computers', 'cucumbers'],
+      wish: ['to fly']
+    },
+    {
+      id: 'joy',
+      image: 'img/mamuker/joy.png',
+      name: 'Joy',
       like: ['sleeping'],
       dislike: ['singing'],
       wish: ['to sleep forever']
+    },
+    {
+      id: 'muse',
+      image: 'img/mamuker/muse.png',
+      name: 'Muse',
+      like: ['fish', 'apples'],
+      dislike: ['computers', 'cucumbers'],
+      wish: ['to fly']
     }
   ],
   noncharacters: [

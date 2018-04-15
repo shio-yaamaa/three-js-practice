@@ -32,7 +32,9 @@ const setMousedownListener = () => {
   	
   	// Make the fog denser; the fog should not affect the focused sprite
   	focusedSprite.material.fog = !zoomIn;
+  	tweenValues.fogNear = scene.fog.near;
   	tweenValues.fogFar = scene.fog.far;
+  	tweenTarget.fogNear = zoomIn ? FOG_NEAR_IN_FOCUS_MODE : DEFAULT_FOG_NEAR;
   	tweenTarget.fogFar = zoomIn ? FOG_FAR_IN_FOCUS_MODE : DEFAULT_FOG_FAR;
   	
     // Move the camera
@@ -70,6 +72,7 @@ const setMousedownListener = () => {
   		.easing(TWEEN.Easing.Quartic.Out)
   		.onUpdate(() => {
   			// Fog
+  			scene.fog.near = tweenValues.fogNear;
   			scene.fog.far = tweenValues.fogFar;
   			
   			// Position
@@ -85,12 +88,17 @@ const setMousedownListener = () => {
   };
   
   renderer.domElement.addEventListener('mousedown', event => {
+    if (intersected && intersected.object === focusedSprite) { // If the zoomed object is clicked, do nothing
+      return;
+    }
+    
     if (focusedSprite){ // zoom out
       focus(false);
       focusedSprite = null;
     } else if (intersected){ // zoom in
       focusedSprite = intersected.object;
     	focusedSprite.material.color.set(DEFAULT_SPRITE_COLOR);
+    	renderer.domElement.style.cursor = 'default';
       cameraPositionBeforeFocus = camera.position.clone();
       cameraQuaternionBeforeFocus = camera.quaternion.clone();
       focus(true);

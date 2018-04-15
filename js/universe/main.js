@@ -65,19 +65,18 @@ const render = () => {
   	sphericalLoading.update(camera.position);
   }
   
-  // Change the hovered sprite's color
+  // Raycaster
+  raycaster.setFromCamera(mouse, camera);
+	const intersects = raycaster.intersectObjects(scene.children);
+	// Change the hovered sprite's color
   if (!focusedSprite) {
-		raycaster.setFromCamera(mouse, camera);
-		const intersects = raycaster.intersectObjects(scene.children);
-		
   	if (intersected && intersected != intersects[0]) {
   		intersected.object.material.color.set(DEFAULT_SPRITE_COLOR); // Reset the previously hovered sprite's color
   	}
-		intersected = intersects[0];
-		intersected && intersected.object.material.color.set(RAYCASTED_SPRITE_COLOR);
-		
-		renderer.domElement.style.cursor = intersected ? 'pointer' : 'default';
+		intersects[0] && intersects[0].object.material.color.set(RAYCASTED_SPRITE_COLOR);
+		renderer.domElement.style.cursor = intersects[0] ? 'pointer' : 'default';
   }
+  intersected = intersects[0];
 	
 	renderer.render(scene, camera);
 };

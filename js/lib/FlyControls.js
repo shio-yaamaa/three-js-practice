@@ -27,22 +27,6 @@ THREE.FlyControls = function ( object, domElement ) {
 	this.moveState = { up: 0, down: 0, left: 0, right: 0, forward: 0, back: 0, pitchUp: 0, pitchDown: 0, yawLeft: 0, yawRight: 0, rollLeft: 0, rollRight: 0 };
 	this.moveVector = new THREE.Vector3( 0, 0, 0 );
 	this.rotationVector = new THREE.Vector3( 0, 0, 0 );
-	
-	// MouseSpeed
-	const mouseSpeed = new MouseSpeed();
-	let mouseSpeedTimer = undefined;
-	this.isCameraRotationActive = true;
-	const onCalcSpeed = () => {
-		if (new THREE.Vector2(mouseSpeed.speedX, mouseSpeed.speedY).length() > 30) {
-			this.isCameraRotationActive = false;
-			console.log(mouseSpeedTimer);
-			clearTimeout(mouseSpeedTimer);
-			mouseSpeedTimer = setTimeout(() => {
-				this.isCameraRotationActive = true;
-			}, 250);
-		}
-	};
-	mouseSpeed.init(onCalcSpeed);
 
 	this.handleEvent = function ( event ) {
 
@@ -155,14 +139,6 @@ THREE.FlyControls = function ( object, domElement ) {
 	};
 
 	this.mousemove = function( event ) {
-		console.log(this.isCameraRotationActive);
-		if (!this.isCameraRotationActive) {
-			this.moveState.yawLeft = 0;
-			this.moveState.pitchDown = 0;
-			this.updateRotationVector();
-			return;
-		}
-		
 		if ( ! this.dragToLook || this.mouseStatus > 0 ) {
 
 			var container = this.getContainerDimensions();
