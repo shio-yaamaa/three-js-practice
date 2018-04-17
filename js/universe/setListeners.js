@@ -95,6 +95,8 @@ const setMousedownListener = () => {
     if (focusedSprite){ // zoom out
       focus(false);
       focusedSprite = null;
+      
+      hideZoomMenu();
     } else if (intersected){ // zoom in
       focusedSprite = intersected.object;
     	focusedSprite.material.color.set(DEFAULT_SPRITE_COLOR);
@@ -102,6 +104,8 @@ const setMousedownListener = () => {
       cameraPositionBeforeFocus = camera.position.clone();
       cameraQuaternionBeforeFocus = camera.quaternion.clone();
       focus(true);
+      
+      showZoomMenu(focusedSprite.mamukType, focusedSprite.mamukData);
     }
   });
 };

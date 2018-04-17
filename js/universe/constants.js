@@ -29,11 +29,14 @@ const RAYCASTER_NEAR = DEFAULT_CAMERA_NEAR;
 const RAYCASTER_FAR = 45;
 
 // Animation duration
+const FADE_DURATION = 200;
+const TYPEWRITE_INTERVAL = 10;
+const HOME_LINK_DURATION = 600;
 const ZOOMIN_DURATION = 800;
 const ZOOMOUT_DURATION = 1000;
 
 // FlyControls
-const FLY_CONTROLS_MOVEMENT_SPEED = 30;
+const FLY_CONTROLS_MOVEMENT_SPEED = 20;
 const FLY_CONTROLS_ROLL_SPEED = Math.PI / 5; // Math.PI / 6;
 
 // SphericalLoading

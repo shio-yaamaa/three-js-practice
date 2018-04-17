@@ -9,6 +9,10 @@ It's a bit tedious because we have to remove the elements in the dictionary when
 
 # Todo
 
+- Text 行送り
+- Pass callback to focus function (fog, camera movement/rotation)
+- Worker to do asynchronous tasks
+
 - Icon License
 
 - animation

@@ -3,42 +3,91 @@
 	<head>
 		<meta charset="utf-8">
 		<title>Universe</title>
+		<!--<link href="https://fonts.googleapis.com/css?family=Hi+Melody" rel="stylesheet">-->
+		<!--<link href="https://fonts.googleapis.com/css?family=Jua" rel="stylesheet">-->
+		<link href="https://fonts.googleapis.com/css?family=Sniglet" rel="stylesheet">
 		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.10/css/all.css" integrity="sha384-+d0P83n9kaQMCwj8F4RJB66tzIwOKmrdb46+porD/OvrJ+37WqIM7UoBtwHO6Nlg" crossorigin="anonymous">
+		<link rel="stylesheet" type="text/css" href="css/normalize.css">
 		<link rel="stylesheet" type="text/css" href="css/universe.css">
+		<link rel="stylesheet" type="text/css" href="css/zoom_menu.css">
 	</head>
 	<body>
-		<!--<div id="universe_favorite_button">★</div>-->
-		<!--<div id="zoom_menu_container">
-			<div id="zoom_menu_left"></div>
-			<div id="zoom_menu_main">
-				<div id="world_list">
-					<div class="world">
-						<img src="img/world_thumbnail/cave.jpg" />
-						<img src="img/world_thumbnail/bubble.png" />
-					</div>
-					<div class="world">
-						<img src="img/world_thumbnail/shrine.jpg" />
-						<img src="img/world_thumbnail/bubble.png" />
-					</div>
-					<div class="world">
-						<img src="img/world_thumbnail/evening.jpg" />
-						<img src="img/world_thumbnail/bubble.png" />
-					</div>
-					<div class="world">
-						<img src="img/world_thumbnail/sakura.jpg" />
-						<img src="img/world_thumbnail/bubble.png" />
-					</div>
+		<!--<div id="universe-favorite-button">★</div>-->
+		<div id="button-container">
+			<i id="chat-button" class="fas fa-comment-dots"></i>
+			<i id="edit-button" class="fas fa-edit"></i>
+			<i id="map-button" class="far fa-map"></i>
+			<i id="home-button" class="fas fa-home"></i>
+		</div>
+		
+		<div id="chat-container">
+			<span id="chat-shown-text"></span>
+			<span id="chat-hidden-text"></span>
+		</div>
+		
+		<div id="edit-container">
+			<div id="fields">
+				<div class="field">
+					<p>Name</p>
+					<input id="name-input" type="text">
+				</div>
+				<div class="field">
+					<p>Like</p>
+					<ul id="like-list"></ul>
+				</div>
+				<div class="field">
+					<p>Dislike</p>
+					<ul id="dislike-list"></ul>
+				</div>
+				<div class="field">
+					<p>Wish</p>
+					<ul id="wish-list"></ul>
 				</div>
 			</div>
-			<div id="zoom_menu_right">
-				<i class="fas fa-home"></i>
-				<i class="far fa-map"></i>
-				<i class="fas fa-comment-dots"></i>
-				<i class="fas fa-edit"></i>
+			<div id="actions">
+				<div id="cancel-button">Cancel</div>
+				<div id="submit-button">Submit</div>
 			</div>
-		</div>-->
+		</div>
 		
-		<script src="js/lib/jquery-3.3.1.slim.min.js"></script>
+		<div id="world-container">
+			<div class="world">
+				<img src="img/world_thumbnail/cave.jpg" />
+				<img src="img/world_thumbnail/bubble.png" />
+			</div>
+			<div class="world">
+				<img src="img/world_thumbnail/not_yet_available.svg" />
+				<img src="img/world_thumbnail/bubble.png" />
+			</div>
+			<div class="world">
+				<img src="img/world_thumbnail/shrine.jpg" />
+				<img src="img/world_thumbnail/bubble.png" />
+			</div>
+			<div class="world">
+				<img src="img/world_thumbnail/not_yet_available.svg" />
+				<img src="img/world_thumbnail/bubble.png" />
+			</div>
+			<div class="world">
+				<img src="img/world_thumbnail/not_yet_available.svg" />
+				<img src="img/world_thumbnail/bubble.png" />
+			</div>
+			<div class="world">
+				<img src="img/world_thumbnail/not_yet_available.svg" />
+				<img src="img/world_thumbnail/bubble.png" />
+			</div>
+			<div class="world">
+				<img src="img/world_thumbnail/evening.jpg" />
+				<img src="img/world_thumbnail/bubble.png" />
+			</div>
+			<div class="world">
+				<img src="img/world_thumbnail/sakura.jpg" />
+				<img src="img/world_thumbnail/bubble.png" />
+			</div>
+		</div>
+		
+		<div id="home-link-overlay"></div>
+		
+		<script src="js/lib/jquery-3.3.1.min.js"></script>
 		<script src="js/lib/three.min.js"></script>
 		<script src="js/lib/FlyControls.js"></script>
 		<script src="js/lib/FirstPersonControls.js"></script>
@@ -46,8 +95,11 @@
 		
 		<script src="js/universe/constants.js"></script>
 		<script src="js/data.js"></script>
+		<script src="js/utility.js"></script>
+		<script src="js/universe/SphericalLoadWorker.js"></script>
 		<script src="js/universe/SphericalLoading.js"></script>
 		<script src="js/universe/setListeners.js"></script>
+		<script src="js/zoomMenu.js"></script>
 		<script src="js/universe/main.js"></script>
 		<!--<script src="js/worldView.js"></script>-->
 	</body>

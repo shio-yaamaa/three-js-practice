@@ -4,7 +4,8 @@ const data = {
       id: 'sea',
       backgroundImage: 'img/world_background/sea.png',
       characters: ['jerryfish', 'fish'],
-      noncharacters: ['weaweed00']
+      noncharacters: ['weaweed00'],
+      isAvailable: true
     }
   ],
   characters: [
@@ -12,17 +13,17 @@ const data = {
       id: 'festival',
       image: 'img/mamuker/festival.png',
       name: 'Festival',
-      like: ['fish', 'apples'],
-      dislike: ['computers', 'cucumbers'],
+      like: ['festivals', 'fireworks'],
+      dislike: ['books', 'school'],
       wish: ['to fly']
     },
     {
       id: 'jelly',
       image: 'img/mamuker/jelly.png',
       name: 'Jelly',
-      like: ['fish', 'apples'],
+      like: ['fish', 'apples', 'oranges'],
       dislike: ['computers', 'cucumbers'],
-      wish: ['to fly']
+      wish: ['to be the largest fish in the world']
     },
     {
       id: 'joy',
@@ -36,9 +37,9 @@ const data = {
       id: 'muse',
       image: 'img/mamuker/muse.png',
       name: 'Muse',
-      like: ['fish', 'apples'],
-      dislike: ['computers', 'cucumbers'],
-      wish: ['to fly']
+      like: ['dancing', 'party'],
+      dislike: ['adults', 'peppers'],
+      wish: ['to go to Subway']
     }
   ],
   noncharacters: [

@@ -1,0 +1,155 @@
+p {
+  margin: 0;
+}
+
+#button-container {
+  display: none; /* toggled to block */
+  position: absolute;
+  top: 4vh;
+  right: 4vw;
+  z-index: 1;
+}
+
+#button-container > i {
+  display: block;
+  padding: 16px;
+  font-size: 2.5rem;
+  color: white;
+  cursor: pointer;
+}
+
+#chat-container {
+  display: none; /* toggled to block */
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 4vh;
+  width: 72vw;
+  margin: auto;
+  padding: 1vw 4vw;
+  border-radius: 4vw;
+  /*font-family: 'Hi Melody', cursive; font-size: 3rem;*/
+  /*font-family: 'Jua', sans-serif; font-size: 2rem; padding: 2vw 4vw;*/
+  font-family: 'Sniglet', cursive; font-size: 2rem; padding: 2vw 4vw;
+  word-wrap: break-word;
+  color: white;
+  background-color: rgba(100, 100, 100, 0.7);
+  box-shadow: 0 0 2vw white;
+}
+
+#chat-hidden-text {
+  visibility: hidden;
+}
+
+#edit-container {
+  display: none; /* toggled to block */
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 50vw;
+  height: 100vh;
+}
+
+#fields {
+  width: 100%;
+  height: calc(100% - 4rem);
+  padding: 2vw 1vw;
+  overflow-y: auto; /* scroll; */
+}
+
+.field {
+  padding: 1vw;
+  border-radius: 0.4rem;
+  background-color: rgba(255, 255, 255, 0.7);
+}
+
+.field:not(:first-child) {
+  margin-top: 2vw;
+}
+
+ul { /* Define it as Reset.css!! */
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.field > p {
+  font-size: 1.6rem;
+}
+
+.field input {
+  width: 100%;
+  background-color: transparent;
+  border: none;
+}
+
+#actions {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  height: 4rem;
+}
+
+#actions > * {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 45%;
+  margin: 0.4rem 0;
+  border-radius: 0.4rem;
+  font-size: 2vw;
+  color: white;
+  border-bottom-style: solid;
+  border-bottom-width: 0.3rem;
+  cursor: pointer;
+}
+
+#cancel-button {
+  background-color: #EF5350;
+  border-bottom-color: #B71C1C;
+}
+
+#submit-button {
+  background-color: #43A047;
+  border-bottom-color: #1B5E20;
+}
+
+#world-container {
+  display: none; /* toggled to flex */
+  justify-content: center;
+  align-content: flex-start;
+  flex-wrap: wrap;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  padding: 5vw;
+  z-index: 1;
+  /*overflow-y: scroll;*/
+}
+
+.world {
+  position: relative;
+  width: 15vw;
+  height: 15vw;
+  margin: 2vw;
+}
+
+.world > img {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 15vw;
+  height: 15vw;
+  border-radius: 50%;
+}
+
+#home-link-overlay {
+  display: none;
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+  background-color: white;
+  z-index: 2;
+}
