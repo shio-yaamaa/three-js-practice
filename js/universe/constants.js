@@ -1,5 +1,5 @@
 // Color
-const SCENE_BACKGROUND = 0x101010;
+const SCENE_BACKGROUND = 0x050e10;
 const DEFAULT_SPRITE_COLOR = 0xffffff;
 const RAYCASTED_SPRITE_COLOR = 0xe57373;
 
@@ -42,4 +42,4 @@ const FLY_CONTROLS_ROLL_SPEED = Math.PI / 5; // Math.PI / 6;
 // SphericalLoading
 const SPAWN_RADIUS = CAMERA_FAR * 2;
 const VIEW_RADIUS = SPAWN_RADIUS * 0.5;
-const SPRITE_COUNT_PER_LOAD = 300;
+const SPRITE_COUNT_PER_LOAD = 500;

@@ -7,8 +7,18 @@ or
 Create a dictionary that maps the object's ID (automatically assigned) to its data.
 It's a bit tedious because we have to remove the elements in the dictionary when removing the sprites.
 
+# Problems with Planes
+
+Before using Workers, we have to decide on what parameters the worker computes, which depends on whether we use planes or sprites. 
+
+- Because of the camera.near and camera.far, planes are clipped
+- Need to completely revise the way of zooming
+- Look messy because of the inconsistency
+
 # Todo
 
+- different MuMu sizes -> different image sizes and new property
+- tween camera.near
 - Text 行送り
 - Pass callback to focus function (fog, camera movement/rotation)
 - Worker to do asynchronous tasks

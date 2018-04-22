@@ -3,49 +3,50 @@ const data = {
     {
       id: 'sea',
       backgroundImage: 'img/world_background/sea.png',
-      characters: ['jerryfish', 'fish'],
-      noncharacters: ['weaweed00'],
+      mamuka: ['gaebul', 'bett'],
+      mumu: ['weaweed00'],
       isAvailable: true
     }
   ],
-  characters: [
+  mamuka: [
     {
-      id: 'festival',
-      image: 'img/mamuker/festival.png',
-      name: 'Festival',
-      like: ['festivals', 'fireworks'],
-      dislike: ['books', 'school'],
+      id: 'gaebul',
+      image: 'img/mamuka/gaebul.png',
+      name: 'Gaebul',
+      like: ['anything delicious'],
+      dislike: ['indecisiveness'],
       wish: ['to fly']
     },
     {
-      id: 'jelly',
-      image: 'img/mamuker/jelly.png',
-      name: 'Jelly',
-      like: ['fish', 'apples', 'oranges'],
-      dislike: ['computers', 'cucumbers'],
+      id: 'bett',
+      image: 'img/mamuka/bett.png',
+      name: 'Bett',
+      like: ['gentle rain', 'friends', 'seeing people enjoying themselves'],
+      dislike: ['feeling down', 'being ill'],
       wish: ['to be the largest fish in the world']
     },
     {
       id: 'joy',
-      image: 'img/mamuker/joy.png',
+      image: 'img/mamuka/joy.png',
       name: 'Joy',
       like: ['sleeping'],
       dislike: ['singing'],
       wish: ['to sleep forever']
     },
     {
-      id: 'muse',
-      image: 'img/mamuker/muse.png',
-      name: 'Muse',
-      like: ['dancing', 'party'],
-      dislike: ['adults', 'peppers'],
-      wish: ['to go to Subway']
+      id: 'dilly_doot',
+      image: 'img/mamuka/dilly_doot.png',
+      name: 'Dilly Doot',
+      like: ['sandwich', 'warm weather', 'peace', 'yellow'],
+      dislike: ['noisy evenings'],
+      wish: ['to always have a bed of my own']
     }
   ],
-  noncharacters: [
+  mumu: [
     {
-      id: 'seaweed00',
-      image: './img/noncharacter/seaweed.png',
+      id: 'mumu00',
+      image: './img/mumu/seaweed.png',
+      name: 'mumu00',
       position: [0, 0, 0],
       rotation: [0, 0, 0]
     }

@@ -28,7 +28,8 @@ class SphericalLoading {
         const isBoundByWidth = texture.image.width >= texture.image.height;
         sprite.scale.set(
           isBoundByWidth ? SPRITE_MAX_DIMENSION : texture.image.width * (SPRITE_MAX_DIMENSION / texture.image.height),
-          isBoundByWidth ? texture.image.height * (SPRITE_MAX_DIMENSION / texture.image.width) : SPRITE_MAX_DIMENSION
+          isBoundByWidth ? texture.image.height * (SPRITE_MAX_DIMENSION / texture.image.width) : SPRITE_MAX_DIMENSION,
+          1
         );
         this.scene.add(sprite);
       }
@@ -40,13 +41,21 @@ class SphericalLoading {
       const randomPosition = this.randomPositionInCube(currentCameraPosition, this.spawnRadius);
   		if (randomPosition.distanceTo(currentCameraPosition) < this.spawnRadius
   			&& randomPosition.distanceTo(previousSphereCenter) > this.spawnRadius) {
-  			const character = data.characters[Math.floor(Math.random() * data.characters.length)];
-  			const sprite = new THREE.Sprite();
-    	  const material = new THREE.SpriteMaterial({map: this.createTexture(sprite, character), fog: true});
+  			const mamuka = data.mamuka[Math.floor(Math.random() * data.mamuka.length)];
+  		  const sprite = new THREE.Sprite();
+    	  const material = new THREE.SpriteMaterial({map: this.createTexture(sprite, mamuka), fog: true});
+    	  
+    	  // Plane
+    	  //const sprite = new THREE.Mesh(new THREE.PlaneGeometry(1, 1));
+    	  //this.scene.add(sprite);
+    	  //const material = new THREE.MeshBasicMaterial({map: this.createTexture(sprite, mamuka), transparent: true, side: THREE.DoubleSide});
+    	  
     	  sprite.material = material;
-    	  sprite.mamukType = 'character';
-    	  sprite.mamukData = character;
-    	  Object.assign(sprite.position, randomPosition);
+    	  sprite.mamukType = 'mamuka';
+    	  sprite.mamukData = mamuka;
+    	  sprite.position.copy(randomPosition);
+    	  
+    	  sprite.rotation.set(Math.random() * 2 * Math.PI, Math.random() * 2 * Math.PI, Math.random() * 2 * Math.PI);
   		}
     }
     if (currentCount < this.spriteCount) {
@@ -56,16 +65,13 @@ class SphericalLoading {
   
   createSprites(currentCameraPosition) {
 		this.createSpritesByInterval(0, currentCameraPosition, this.previousSphereCenter.clone());
-		//workerオブジェクト
+		/*
     const worker = new Worker('js/universe/SphericalLoadWorker.js');
-  
-    //処理結果、受信イベント
     worker.addEventListener('message', function(e) {
       //console.log('received ', e.data);
     }, false);
-  
-    //処理命令
     worker.postMessage(JSON.stringify(this.scene));
+    */
   }
   
   removeSprites(currentCameraPosition) {

@@ -26,15 +26,9 @@ p {
   bottom: 4vh;
   width: 72vw;
   margin: auto;
-  padding: 1vw 4vw;
-  border-radius: 4vw;
-  /*font-family: 'Hi Melody', cursive; font-size: 3rem;*/
-  /*font-family: 'Jua', sans-serif; font-size: 2rem; padding: 2vw 4vw;*/
-  font-family: 'Sniglet', cursive; font-size: 2rem; padding: 2vw 4vw;
+  font-family: 'Hi Melody', cursive; font-size: 3rem;
   word-wrap: break-word;
   color: white;
-  background-color: rgba(100, 100, 100, 0.7);
-  box-shadow: 0 0 2vw white;
 }
 
 #chat-hidden-text {
@@ -60,6 +54,7 @@ p {
 .field {
   padding: 1vw;
   border-radius: 0.4rem;
+  border-bottom: 5px solid white;
   background-color: rgba(255, 255, 255, 0.7);
 }
 

@@ -10,7 +10,7 @@ html, body {
 
 body {
   overflow: hidden;
-  background-color: #101010; /* Same as the scene background */
+  background-color: #050e10; /* Same as the scene background */
 }
 
 canvas {

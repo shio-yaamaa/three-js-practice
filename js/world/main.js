@@ -1,6 +1,6 @@
 /* global THREE */
 
-// Fly controls container
+// FirstPersonControls container
 const container = document.createElement('div');
 document.body.appendChild(container);
 
@@ -14,15 +14,14 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 container.appendChild(renderer.domElement);
 
-// FlyControls
+// FirstPersonControls
 const firstPersonControls = new THREE.FirstPersonControls(camera, container);
 const clock = new THREE.Clock();
-firstPersonControls.movementSpeed = FLY_CONTROLS_MOVEMENT_SPEED;
-const toggleFlyControls = activate => {
+const toggleFirstPersonControls = activate => {
 	firstPersonControls.movementSpeed = activate ? FLY_CONTROLS_MOVEMENT_SPEED : 0;
 	firstPersonControls.lookSpeed = activate ? FLY_CONTROLS_ROLL_SPEED / 2 : 0;
 };
-toggleFlyControls(true);
+toggleFirstPersonControls(true);
 
 // Create the world background
 const worldBackgroundTexture = new THREE.TextureLoader().load('test.png');

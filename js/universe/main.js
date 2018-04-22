@@ -2,6 +2,8 @@
 /* global TWEEN */
 /* global SphericalLoading */
 
+let requestAnimationFrameId;
+
 // Fly controls container
 const container = document.createElement('div');
 document.body.appendChild(container);
@@ -54,11 +56,20 @@ const sphericalLoading = new SphericalLoading(
 
 // Animate and Render
 const animate = () => {
-	requestAnimationFrame(animate);
+	requestAnimationFrameId = requestAnimationFrame(animate);
 	render();
 };
 
 const render = () => {
+	// Rotate planes
+	if (!focusedSprite) {
+		scene.children.forEach(plane => {
+			plane.rotation.x = plane.rotation.x + 0.01;
+			plane.rotation.y = plane.rotation.y + 0.01;
+			plane.rotation.z = plane.rotation.z + 0.01;
+		});
+	}
+	
 	TWEEN.update();
   flyControls.update(clock.getDelta());
   if (!focusedSprite) {
@@ -85,6 +96,11 @@ animate();
 
 // User interaction events
 setMouseMoveListener();
-setMousedownListener();
+//setMousedownListener();
 setWheelListener();
 setWindowListener();
+
+renderer.domElement.addEventListener('mousedown', event => {
+	window.cancelAnimationFrame(requestAnimationFrameId);
+	switchToDifferentScene(renderer);
+});

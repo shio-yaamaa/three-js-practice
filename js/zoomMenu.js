@@ -99,13 +99,13 @@ const showEdit = () => {
   // Set fields
   nameInput.val(assetData.name);
   assetData.like.forEach(like => {
-    likeList.append($(`<li><input type="text" value="${like}"></li>`));
+    likeList.append($(`<li><input class="like-input" type="text" value="${like}"></li>`));
   });
   assetData.dislike.forEach(dislike => {
-    dislikeList.append($(`<li><input type="text" value="${dislike}"></li>`));
+    dislikeList.append($(`<li><input class="dislike-input" type="text" value="${dislike}"></li>`));
   });
   assetData.wish.forEach(wish => {
-    wishList.append($(`<li><input type="text" value="${wish}"></li>`))
+    wishList.append($(`<li><input class="wish-input" type="text" value="${wish}"></li>`))
   });
   
   editContainer.fadeIn(FADE_DURATION);
@@ -114,6 +114,14 @@ const showEdit = () => {
 const hideEdit = () => {
   editContainer.fadeOut(FADE_DURATION);
 };
+
+// Enter and delete
+$('.like-input').keyup(event => {
+  console.log(event.keyCode);
+  if (event.keyCode === 13) {
+    console.log('enter');
+  }
+});
 
 $('#cancel-button').on('click', () => {
   hideEdit();
