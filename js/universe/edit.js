@@ -24,90 +24,119 @@ const toggleSidewaysTrackingControls = activate => {
 };
 toggleSidewaysTrackingControls(true);
 
-const doTwoSquaresOverlap = (leftTop1, rightBottom1, leftTop2, rightBottom2) => {
-  if (leftTop1[0] > rightBottom2[0] || leftTop2[0] > rightBottom1[0]) {
-    return false;
-  }
-  if (leftTop1[1] > rightBottom2[1] || leftTop2[1] > rightBottom1[1]) {
-    return false;
-  }
-  return true;
+const ignoreZ = vector => {
+  return new THREE.Vector3(vector.x, vector.y, 0);
 };
 
-const starPlane = -20;
+// Constellation setup & Create MaMuka
+const constellationPlane = -30;
 const mamukaSprite = new THREE.Sprite(
   new THREE.SpriteMaterial({map: new THREE.TextureLoader().load('img/mamuka/joy.png'), color: 0xffffff})
 );
-mamukaSprite.position.set(0, 0, starPlane);
+mamukaSprite.position.set(0, 0, constellationPlane);
 mamukaSprite.scale.set(8, 8, 1);
 scene.add(mamukaSprite);
-console.log(mamukaSprite.position);
-const mamukaXRange = [-4, 4];
-const mamukaYRange = [-4, 4];
+const mamukaRadius = 6;
 
-// Add stars
+// Star setup
+const starLayerThickness = 5;
+const starGenerateProbability = 1; // kesu???
+/*
+  {
+    sprite: THREE.Sprite,
+    parent: star object (null in the first layer),
+    generation: Integer,
+    line: THREE.Line,
+    lineEnd: THREE.Vector3
+  }
+*/
+const stars = []; 
+const starCount = 80;
 const starTexture = new THREE.TextureLoader().load('img/star.png');
-const starGridSize = 5;
-const starXRange = [-20, 20];
-const starYRange = [-20, 20];
-const starGenerateProbability = 1;
-const stars = [];
 const lineMaterial = new THREE.LineBasicMaterial({color: 0xf0feff});
-for (let i = 0; i < (starXRange[1] - starXRange[0]) / starGridSize * (starYRange[1] - starYRange[0]) / starGridSize; i++) {
-  if (Math.random() > starGenerateProbability) {
-    continue;
-  }
-  const gridXIndex = i % ((starXRange[1] - starXRange[0]) / starGridSize);
-  const gridYIndex = Math.floor(i / ((starYRange[1] - starYRange[0]) / starGridSize));
-  console.log(gridXIndex, gridYIndex);
-  const xPositionRange = [starXRange[0] + gridXIndex * starGridSize, starXRange[0] + (gridXIndex + 1) * starGridSize];
-  const yPositionRange = [starYRange[0] + gridYIndex * starGridSize, starYRange[0] + (gridYIndex + 1) * starGridSize];
-  if (doTwoSquaresOverlap(
-    [xPositionRange[0], yPositionRange[0]], [xPositionRange[1], yPositionRange[1]],
-    [mamukaXRange[0], mamukaYRange[0]], [mamukaXRange[1], mamukaYRange[1]])) {
-    continue;
-  }
-  const xPosition = Math.random() * (xPositionRange[1] - xPositionRange[0]) + xPositionRange[0];
-  const yPosition = Math.random() * (yPositionRange[1] - yPositionRange[0]) + yPositionRange[1];
-  const zPosition = starPlane - Math.random();
-  
-  const star = new THREE.Sprite(
-    new THREE.SpriteMaterial({map: starTexture, color: 0xffffff})
-  );
-  star.position.set(xPosition, yPosition, zPosition);
-  scene.add(star);
-  stars.push(star);
-}
 
-stars.forEach(star => {
-  const nearerStars = stars.filter(nearerStarCandidate => { // nearerStars: stars that is closer to the origin than the current star is
-    return nearerStarCandidate.position.length() < star.position.length();
-  }); // If we use the closest nearer star as the parent, just use reduce
-  let parent;
-  if (nearerStars.length > 0) {
-    parent = nearerStars.reduce((accumulator, currentStar) => {
-      if (accumulator && accumulator.position.distanceTo(star.position) < currentStar.position.distanceTo(star.position)) {
-        return accumulator;
-      } else {
-        return currentStar;
-      }
-    }, undefined);
-  } else {
-    parent = mamukaSprite;
-  }
+const addLayer = (layerIndex, remainingStarCount) => {
+  const starCountInLayer = Math.min(Math.floor(layerIndex + 3 + layerIndex * 5), remainingStarCount); // Randomize??
+  const innerRadius = mamukaRadius + starLayerThickness * layerIndex;
+  const sectionAngle = Math.PI * 2 / starCountInLayer;
+  for (let i = 0; i < starCountInLayer; i++) {
+    const sprite = new THREE.Sprite(
+      new THREE.SpriteMaterial({map: starTexture, color: 0xffffff})
+    );
+    sprite.visible = false;
     
-  // Create a line object
-  const lineGeometry = new THREE.Geometry();
-  const start = star.position.clone();
-  const end = parent.position.clone();
-  const clip = new THREE.Vector3().subVectors(end, start).clampLength(0.3, 0.3);
-  lineGeometry.vertices.push(
-  	new THREE.Vector3().addVectors(start, clip),
-  	new THREE.Vector3().subVectors(end, clip)
-  );
-  const line = new THREE.Line(lineGeometry, lineMaterial);
-  scene.add(line);
-});
+    // Set position
+    const radius = THREE.Math.randFloat(innerRadius, innerRadius + mamukaRadius);
+    const theta = THREE.Math.randFloat(sectionAngle * i, sectionAngle * (i + 1));
+    const x = Math.sin(theta) * radius;
+    const y = Math.cos(theta) * radius;
+    const z = constellationPlane; // Needs to be randomized, but should not be taken into consideration when calculating the distance between two stars
+    sprite.position.set(x, y, z);
+    scene.add(sprite);
+    
+    // Set parent
+    let parent = null;
+    let parentSprite;
+    if (layerIndex === 0) {
+      parentSprite = mamukaSprite;
+    } else {
+      parent = stars.reduce((accumulator, parentCandidate) => {
+        const isAccumulatorCloser = accumulator
+          && accumulator.sprite.position.distanceTo(sprite.position)
+            < parentCandidate.sprite.position.distanceTo(sprite.position);
+        return isAccumulatorCloser ? accumulator : parentCandidate;
+      }, null);
+      parentSprite = parent.sprite;
+    }
+    
+    // Draw line
+    const lineGeometry = new THREE.Geometry();
+    const start = parentSprite.position.clone();
+    const end = sprite.position.clone();
+    const clip = new THREE.Vector3().subVectors(end, start).clampLength(0.3, 0.3);
+    const clippedStart = new THREE.Vector3().addVectors(start, clip);
+    const clippedEnd = new THREE.Vector3().subVectors(end, clip);
+    lineGeometry.vertices.push(clippedStart.clone(), clippedStart.clone());
+    const line = new THREE.Line(lineGeometry, lineMaterial);
+    scene.add(line);
+    
+    stars.push({
+      sprite: sprite,
+      parent: parent,
+      generation: layerIndex === 0 ? 0 : (parent.generation + 1),
+      line: line,
+      lineEnd: clippedEnd
+    });
+  }
+  if (remainingStarCount - starCountInLayer > 0) {
+    addLayer(layerIndex + 1, remainingStarCount - starCountInLayer);
+  }
+};
+
+addLayer(0, starCount);
+
+// Star connections will look weird when a star get removed and its children get connected to their nearest neighbor.
+// Should I avoid stars that belong to the same layer??
+
+const showGeneration = generationIndex => {
+  const starsOfGeneration = stars.filter(star => star.generation === generationIndex);
+  starsOfGeneration.forEach((star, starIndex) => {
+    const lineTween = new TWEEN.Tween(star.line.geometry.vertices[1])
+      .to(star.lineEnd, 300)
+      .onUpdate(() => {
+        star.line.geometry.verticesNeedUpdate = true;
+      })
+      .onComplete(() => {
+        star.sprite.visible = true;
+        if (starIndex === 0) {
+          showGeneration(generationIndex + 1);
+        }
+      })
+      .start();
+  });
+};
+
+showGeneration(0);
 
 // Animate and Render
 const animate = () => {
