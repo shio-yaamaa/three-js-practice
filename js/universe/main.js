@@ -2,12 +2,9 @@
 /* global TWEEN */
 /* global SphericalLoading */
 
-let requestAnimationFrameId;
-
 // Fly controls container
 const container = document.createElement('div');
 document.body.appendChild(container);
-//document.body.insertBefore(container, document.getElementById('zoom_menu'));
 
 // Scene, Camera, Renderer
 const scene = new THREE.Scene();
@@ -15,14 +12,13 @@ scene.background = new THREE.Color(SCENE_BACKGROUND);
 //scene.background = new THREE.TextureLoader().load('img/universe_background.jpg');
 scene.fog = new THREE.Fog(scene.background, 3, DEFAULT_FOG_FAR);
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, DEFAULT_CAMERA_NEAR, CAMERA_FAR);
-const renderer = new THREE.WebGLRenderer(/*{alpha: true}*/);
+const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 container.appendChild(renderer.domElement);
 
 // FlyControls
 const flyControls = new THREE.FlyControls(camera, container);
 const clock = new THREE.Clock();
-flyControls.movementSpeed = FLY_CONTROLS_MOVEMENT_SPEED;
 const toggleFlyControls = activate => {
 	flyControls.movementSpeed = activate ? FLY_CONTROLS_MOVEMENT_SPEED : 0;
 	flyControls.rollSpeed = activate ? FLY_CONTROLS_ROLL_SPEED : 0;
@@ -56,7 +52,7 @@ const sphericalLoading = new SphericalLoading(
 
 // Animate and Render
 const animate = () => {
-	requestAnimationFrameId = requestAnimationFrame(animate);
+	requestAnimationFrame(animate);
 	render();
 };
 
@@ -96,11 +92,6 @@ animate();
 
 // User interaction events
 setMouseMoveListener();
-//setMousedownListener();
+setMousedownListener();
 setWheelListener();
 setWindowListener();
-
-renderer.domElement.addEventListener('mousedown', event => {
-	window.cancelAnimationFrame(requestAnimationFrameId);
-	switchToDifferentScene(renderer);
-});
