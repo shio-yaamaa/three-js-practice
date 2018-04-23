@@ -44,6 +44,17 @@ p {
   height: 100vh;
 }
 
+#focused-star {
+  position: absolute;
+  width: 30vw;
+  height: 30vw;
+  transform: scale(0);
+  background: url('/img/star.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  transition: transform 0.2s ease-in-out;
+}
+
 #fields {
   width: 100%;
   height: calc(100% - 4rem);
