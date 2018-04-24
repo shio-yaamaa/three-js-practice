@@ -88,35 +88,14 @@ ul { /* Define it as Reset.css!! */
   border: none;
 }
 
-#actions {
-  display: flex;
-  justify-content: space-around;
-  width: 100%;
-  height: 4rem;
-}
-
-#actions > * {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 45%;
-  margin: 0.4rem 0;
-  border-radius: 0.4rem;
-  font-size: 2vw;
-  color: white;
-  border-bottom-style: solid;
-  border-bottom-width: 0.3rem;
+#edit-topics > * {
+  background-color: white;
   cursor: pointer;
 }
 
-#cancel-button {
-  background-color: #EF5350;
-  border-bottom-color: #B71C1C;
-}
-
-#submit-button {
-  background-color: #43A047;
-  border-bottom-color: #1B5E20;
+#actions > * {
+  background-color: white;
+  cursor: pointer;
 }
 
 #world-container {

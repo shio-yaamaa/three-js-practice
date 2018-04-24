@@ -6,10 +6,9 @@ const chatContainer = $('#chat-container');
 const chatShownTextSpan = $('#chat-shown-text');
 const chatHiddenTextSpan = $('#chat-hidden-text');
 const editContainer = $('#edit-container');
-const nameInput = $('#name-input');
-const likeList = $('#like-list');
-const dislikeList = $('#dislike-list');
-const wishList = $('#wish-list');
+const likesButton = $('#likes-button');
+const dislikesButton = $('#dislikes-button');
+const wishesButton = $('#wishes-button');
 
 let assetType;
 let assetData = {};
@@ -90,30 +89,29 @@ const hideChat = () => {
 }
 
 // Edit
+let currentConstellation;
+
 const showEdit = () => {
-  // Clear fields
-  likeList.empty();
-  dislikeList.empty();
-  wishList.empty();
-  
-  // Set fields
-  nameInput.val(assetData.name);
-  assetData.like.forEach(like => {
-    likeList.append($(`<li><input class="like-input" type="text" value="${like}"></li>`));
-  });
-  assetData.dislike.forEach(dislike => {
-    dislikeList.append($(`<li><input class="dislike-input" type="text" value="${dislike}"></li>`));
-  });
-  assetData.wish.forEach(wish => {
-    wishList.append($(`<li><input class="wish-input" type="text" value="${wish}"></li>`))
-  });
-  
-  editContainer.fadeIn(FADE_DURATION);
+  document.body.style.background = `radial-gradient(#09123b, #03020a)`;
+  editRendering.start();
+  editRendering.toggleCameraControls(true);
+  editContainer.fadeIn(FADE_DURATION); // Don't delete it because it contains action buttons
+  changeTopic('like');
 };
 
 const hideEdit = () => {
   editContainer.fadeOut(FADE_DURATION);
 };
+
+const changeTopic = topic => {
+  currentConstellation && currentConstellation.close(() => currentConstellation.show());
+  const texts = ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''];
+  currentConstellation = new Constellation(texts, data.mamuka[1], editRendering.scene, editRendering.camera, -15, 3, CONSTELLATION_COLORS[topic]);
+};
+
+$('#likes-button').on('click', () => changeTopic('likes'));
+$('#dislikes-button').on('click', () => changeTopic('dislikes'));
+$('#wishes-button').on('click', () => changeTopic('wishes'));
 
 // Enter and delete
 $('.like-input').keyup(event => {

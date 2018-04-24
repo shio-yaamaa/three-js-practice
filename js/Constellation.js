@@ -1,31 +1,28 @@
 /* global THREE */
 
 class Constellation {
-  constructor(texts, mamuka, scene, z, layerThickness) {
+  constructor(texts, mamuka, scene, camera, z, layerThickness, color) {
     this.scene = scene;
     this.z = z;
+    this.color = color;
     
     // Stars
-    this.stars = [new RootStar(scene, mamuka, new THREE.Vector3().setZ(z))];
+    this.root = new RootStar(scene, camera, mamuka, new THREE.Vector3().setZ(z), this.color);
+    this.stars = [this.root];
     this.layerThickness = layerThickness;
     
-    // test
-    this.texts = texts;
-    
     this.addLayer(0, texts.length);
-    this.show();
   }
   
   addLayer(layerIndex, remainingStarCount) {
     const defaultStarCountInLayer = Math.floor(3 + layerIndex * 6);
     const starCountInLayer = Math.min(defaultStarCountInLayer, remainingStarCount); // Randomize??
-    const innerRadius = this.stars[0].radius + this.layerThickness * layerIndex;
+    const innerRadius = this.root.radius + this.layerThickness * layerIndex;
     const sectionAngle = Math.PI * 2 / defaultStarCountInLayer;
     
     for (let i = 0; i < starCountInLayer; i++) {
-      this.texts.splice(0, 1);
       // Set position
-      const radius = THREE.Math.randFloat(innerRadius, innerRadius + this.stars[0].radius);
+      const radius = THREE.Math.randFloat(innerRadius, innerRadius + this.root.radius);
       const theta = THREE.Math.randFloat(sectionAngle * i, sectionAngle * (i + 1));
       const x = Math.sin(theta) * radius;
       const y = Math.cos(theta) * radius;
@@ -33,14 +30,14 @@ class Constellation {
       const position = new THREE.Vector3(x, y, z);
       
       // Choose a parent
-      const parent = layerIndex === 0 ? this.stars[0] : this.stars.reduce((accumulator, parentCandidate) => {
+      const parent = layerIndex === 0 ? this.root : this.stars.reduce((accumulator, parentCandidate) => {
         const isAccumulatorCloser = accumulator
           && accumulator.sprite.position.distanceTo(position)
             < parentCandidate.sprite.position.distanceTo(position);
         return isAccumulatorCloser ? accumulator : parentCandidate;
       });
       
-      const star = new ChildStar('', this.scene, parent, position);
+      const star = new ChildStar('', this.scene, this.root, parent, position, this.color);
       parent && parent.children.push(star);
       this.stars.push(star);
     }
@@ -61,8 +58,11 @@ class Constellation {
   }
   
   show() {
-    for (let i = 0; i < 3; i++) {
-      this.stars[i].show();
-    }
+    this.root.show();
+  }
+  
+  close(callback) {
+    this.stars.forEach(star => star.hide());
+    callback();
   }
 }

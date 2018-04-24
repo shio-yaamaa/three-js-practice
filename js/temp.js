@@ -28,3 +28,16 @@ for (let i = 0; i < 100; i++) {
 	scene.add(sprite);
 }
 */
+
+// RootStar
+// For creating speech balloon
+  getTopPositionOnScreen(camera) {
+    const widthHalf = window.innerWidth / 2;
+    const heightHalf = window.innerHeight / 2;
+    const topPosition = this.sprite.position.clone().setY(this.sprite.position.y + this.radius);
+    topPosition.project(camera);
+    return new THREE.Vector2(
+      (topPosition.x * widthHalf) + widthHalf,
+      -(topPosition.y * heightHalf) + heightHalf
+    );
+  }

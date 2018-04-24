@@ -43,3 +43,10 @@ const FLY_CONTROLS_ROLL_SPEED = Math.PI / 5; // Math.PI / 6;
 const SPAWN_RADIUS = CAMERA_FAR * 2;
 const VIEW_RADIUS = SPAWN_RADIUS * 0.5;
 const SPRITE_COUNT_PER_LOAD = 500;
+
+// Constellation
+const CONSTELLATION_COLORS = {
+  like: 0xffd3d3,
+  dislike: 0xfffbb7,
+  wishe: 0xd3e2ff
+};

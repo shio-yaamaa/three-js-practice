@@ -1,9 +1,5 @@
 /* global THREE */
 
-// FirstPersonControls container
-const container = document.createElement('div');
-document.body.appendChild(container);
-
 // Scene, Camera, Renderer
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(SCENE_BACKGROUND);
@@ -12,10 +8,10 @@ scene.background = new THREE.Color(SCENE_BACKGROUND);
 const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
-container.appendChild(renderer.domElement);
+document.body.appendChild(renderer.domElement);
 
 // FirstPersonControls
-const firstPersonControls = new THREE.FirstPersonControls(camera, container);
+const firstPersonControls = new THREE.FirstPersonControls(camera);
 const clock = new THREE.Clock();
 const toggleFirstPersonControls = activate => {
 	firstPersonControls.movementSpeed = activate ? FLY_CONTROLS_MOVEMENT_SPEED : 0;

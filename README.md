@@ -1,11 +1,14 @@
-# How to get the information of focusedSprite?
+# What I did for making Rendering
+- delete container for cameraControls
+- delete the definition of clock
+- delete animate function
+- delete cameraControls.update() and renderer.render()
+- setListener only defines the listeners
+- Use toggleCameraControls()
+- delete the renderer defined in edit.js
 
-When creating new sprites, set properties "mamukType" and "mamukData"??
-
-or
-
-Create a dictionary that maps the object's ID (automatically assigned) to its data.
-It's a bit tedious because we have to remove the elements in the dictionary when removing the sprites.
+# If we make the MaMuka to speak, and when the MaMuka is out of the screen, users cannot see what he says.
+I might not need to pass camera object to the RootStar and the RootStar to the ChildStars
 
 # Problems with Planes
 

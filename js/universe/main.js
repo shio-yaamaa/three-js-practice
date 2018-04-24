@@ -2,28 +2,14 @@
 /* global TWEEN */
 /* global SphericalLoading */
 
-// Fly controls container
-const container = document.createElement('div');
-document.body.appendChild(container);
-
 // Scene, Camera, Renderer
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(SCENE_BACKGROUND);
-//scene.background = new THREE.TextureLoader().load('img/universe_background.jpg');
 scene.fog = new THREE.Fog(scene.background, 3, DEFAULT_FOG_FAR);
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, DEFAULT_CAMERA_NEAR, CAMERA_FAR);
-const renderer = new THREE.WebGLRenderer();
+const renderer = new THREE.WebGLRenderer({antialias: true});
 renderer.setSize(window.innerWidth, window.innerHeight);
-container.appendChild(renderer.domElement);
-
-// FlyControls
-const flyControls = new THREE.FlyControls(camera, container);
-const clock = new THREE.Clock();
-const toggleFlyControls = activate => {
-	flyControls.movementSpeed = activate ? FLY_CONTROLS_MOVEMENT_SPEED : 0;
-	flyControls.rollSpeed = activate ? FLY_CONTROLS_ROLL_SPEED : 0;
-};
-toggleFlyControls(true);
+document.body.appendChild(renderer.domElement);
 
 // Raycaster
 const raycaster = new THREE.Raycaster();
@@ -50,12 +36,7 @@ const sphericalLoading = new SphericalLoading(
 	SPRITE_COUNT_PER_LOAD
 );
 
-// Animate and Render
-const animate = () => {
-	requestAnimationFrame(animate);
-	render();
-};
-
+// Render
 const render = () => {
 	// Rotate planes
 	if (!focusedSprite) {
@@ -67,7 +48,7 @@ const render = () => {
 	}
 	
 	TWEEN.update();
-  flyControls.update(clock.getDelta());
+  //flyControls.update(clock.getDelta());
   if (!focusedSprite) {
   	sphericalLoading.update(camera.position);
   }
@@ -84,14 +65,24 @@ const render = () => {
 		renderer.domElement.style.cursor = intersects[0] ? 'pointer' : 'default';
   }
   intersected = intersects[0];
-	
-	renderer.render(scene, camera);
 };
 
-animate();
-
-// User interaction events
-setMouseMoveListener();
-setMousedownListener();
-setWheelListener();
-setWindowListener();
+// Rendering
+Rendering.renderer = renderer;
+const universeRendering = new Rendering(
+	scene,
+	camera,
+	THREE.FlyControls,
+	[{key: 'movementSpeed', value: FLY_CONTROLS_MOVEMENT_SPEED}, {key: 'rollSpeed', value: FLY_CONTROLS_ROLL_SPEED}],
+	render
+);
+universeRendering.start();
+universeRendering.toggleCameraControls(true);
+universeRendering.addEventListeners([
+	{type: 'mousemove', listener: mousemoveListener},
+	{type: 'mousedown', listener: mousedownListener},
+	{type: 'wheel', listener: wheelListener},
+	{type: 'resize', listener: resizeListener},
+	{type: 'mouseleave', listener: mouseleaveListener},
+	{type: 'mouseenter', listener: mouseenterListener}
+]);

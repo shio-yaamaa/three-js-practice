@@ -1,14 +1,17 @@
 class Star {
-  constructor() {}
+  constructor(scene) {
+    this.scene = scene;
+  }
 }
 
 class RootStar extends Star {
-  constructor(scene, mamuka, position) {
-    super();
+  constructor(scene, camera, mamuka, position, color) {
+    super(scene);
     this.mamuka = mamuka;
     this.children = [];
     this.radius;
     this.sprite = this.createSprite(scene, mamuka, position);
+    this.setupSpeechBalloon(scene);
   }
   
   createSprite(scene, mamuka, position) {
@@ -22,20 +25,47 @@ class RootStar extends Star {
     return sprite;
   }
   
+  setupSpeechBalloon(scene, camera) {
+    this.speechBalloon = document.createElement('div');
+  }
+  
   show() {
     this.children.forEach(child => child.show());
+  }
+  
+  hide() {
+    this.scene.remove(this.sprite);
+  }
+  
+  hover() {
+    
+  }
+  
+  unhover() {
+    
+  }
+  
+  startTalking(text) {
+    /*this.topic = 'like'; // Should be passed from constellation
+    this.speechBalloon.textContent = `I ${this.topic} ${text}!`;*/
+    
+  }
+  
+  stopTalking() {
+    
   }
 }
 
 class ChildStar extends Star {
-  constructor(text, scene, parent, position) {
-    super();
+  constructor(text, scene, root, parent, position, color) { // Root is needed to make MaMuka speak when ChildStar is hovered
+    super(scene);
     this.text = text;
-    this.sprite = this.createSprite(scene, position);
+    this.sprite = this.createSprite(scene, position, color);
+    this.root = root;
     this.parent = parent; // Can be null
     this.children = [];
     //this.generation = parent.generation + 1; // iranakune???
-    this.line = this.createLine(scene, parent.sprite.position, position);
+    this.line = this.createLine(scene, parent.sprite.position, position, color);
     this.lineEnd;
     
     // Bob Animation
@@ -43,9 +73,9 @@ class ChildStar extends Star {
     this.currentBobTweens = [];
   }
   
-  createSprite(scene, position) {
+  createSprite(scene, position, color) {
     const sprite = new THREE.Sprite(
-      new THREE.SpriteMaterial({map: Star.starTexture, color: 0xffffff})
+      new THREE.SpriteMaterial({map: Star.starTexture, color: color})
     );
     sprite.position.set(position.x, position.y, position.z);
     sprite.visible = false;
@@ -53,7 +83,7 @@ class ChildStar extends Star {
     return sprite;
   }
   
-  createLine(scene, parentPosition, childPosition) {
+  createLine(scene, parentPosition, childPosition, color) {
     const lineGeometry = new THREE.Geometry();
     const start = parentPosition.clone();
     const end = childPosition.clone();
@@ -66,7 +96,7 @@ class ChildStar extends Star {
     const correctedEnd = new THREE.Vector3().subVectors(end, endCorrection);
     this.lineEnd = correctedEnd;
     lineGeometry.vertices.push(correctedStart.clone(), correctedStart.clone());
-    const line = new THREE.Line(lineGeometry, Star.lineMaterial);
+    const line = new THREE.Line(lineGeometry, new THREE.LineBasicMaterial({color: color}));
     scene.add(line);
     
     return line;
@@ -83,6 +113,16 @@ class ChildStar extends Star {
         this.children.forEach(child => child.show());
       })
       .start();
+  }
+  
+  hover() {
+    this.root.startTalking('Miwatasu kagirino kouya');
+    this.startBob();
+  }
+  
+  unhover() {
+    this.root.stopTalking();
+    this.stopBob();
   }
   
   startBob() {
@@ -103,8 +143,14 @@ class ChildStar extends Star {
     this.currentBobTweens = [];
   }
   
+  // Removal by user
   remove() {}
+  
+  // Removal by changing the topic
+  hide() {
+    this.scene.remove(this.sprite);
+    this.scene.remove(this.line);
+  }
 }
 
 Star.starTexture = new THREE.TextureLoader().load('img/star.png');
-Star.lineMaterial = new THREE.LineBasicMaterial({color: 0xf0feff});
