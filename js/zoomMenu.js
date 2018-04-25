@@ -6,9 +6,10 @@ const chatContainer = $('#chat-container');
 const chatShownTextSpan = $('#chat-shown-text');
 const chatHiddenTextSpan = $('#chat-hidden-text');
 const editContainer = $('#edit-container');
-const likesButton = $('#likes-button');
-const dislikesButton = $('#dislikes-button');
-const wishesButton = $('#wishes-button');
+const editTopicButtonContainer = $('#edit-topics');
+const inputContainer = $('#edit-input-container');
+const inputPrefixSpan = $('#edit-input-prefix');
+const input = $('#edit-input');
 
 let assetType;
 let assetData = {};
@@ -49,6 +50,7 @@ $('#home-button').on('click', () => {
 let chatTimer;
 
 const typewrite = () => {
+  // jQuery Function Number 1
   chatShownTextSpan.text(chatShownTextSpan.text() + chatHiddenTextSpan.text().charAt(0));
   chatHiddenTextSpan.text(chatHiddenTextSpan.text().substring(1));
   if (chatHiddenTextSpan.text().length > 0) {
@@ -67,7 +69,7 @@ const showChat = () => {
       text = `I'm ${assetData.name}! Nice to meet you.`;
       break;
     case 'like':
-      text = `I like ${concatenate(assetData.like)}♡♡`;
+      text = `I like ${concatenate(assetData.like)}♡`;
       break;
     case 'dislike':
       text = `I don't like ${concatenate(assetData.dislike)}...`;
@@ -79,24 +81,30 @@ const showChat = () => {
   
   chatShownTextSpan.text('');
   chatHiddenTextSpan.text(text);
+  // jQuery Function Number 4
   chatContainer.show();
   typewrite();
 }
 
 const hideChat = () => {
   clearTimeout(chatTimer);
+  // jQuery Function Number 3
   chatContainer.hide();
 }
 
 // Edit
-let currentConstellation;
+let editView;
 
 const showEdit = () => {
   document.body.style.background = `radial-gradient(#09123b, #03020a)`;
-  editRendering.start();
-  editRendering.toggleCameraControls(true);
   editContainer.fadeIn(FADE_DURATION); // Don't delete it because it contains action buttons
-  changeTopic('like');
+  
+  editView = new EditView(
+    new THREE.Scene(),
+    new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000),
+    null,
+    data.mamuka[0]
+  );
 };
 
 const hideEdit = () => {
@@ -104,20 +112,25 @@ const hideEdit = () => {
 };
 
 const changeTopic = topic => {
-  currentConstellation && currentConstellation.close(() => currentConstellation.show());
-  const texts = ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''];
-  currentConstellation = new Constellation(texts, data.mamuka[1], editRendering.scene, editRendering.camera, -15, 3, CONSTELLATION_COLORS[topic]);
+  // jQuery Function Number 2
+  editTopicButtonContainer.css('visibility', 'hidden');
+  inputPrefixSpan.text(`I ${topic}`);
+  editView.drawConstellation(topic);
 };
 
-$('#likes-button').on('click', () => changeTopic('likes'));
-$('#dislikes-button').on('click', () => changeTopic('dislikes'));
-$('#wishes-button').on('click', () => changeTopic('wishes'));
+$('#like-button').on('click', () => changeTopic('like'));
+$('#dislike-button').on('click', () => changeTopic('dislike'));
+$('#wish-button').on('click', () => changeTopic('wish'));
 
-// Enter and delete
-$('.like-input').keyup(event => {
+input.keyup(event => {
   console.log(event.keyCode);
   if (event.keyCode === 13) {
-    console.log('enter');
+    // TODO: distinguish add and edit
+    editView.constellation.addStar()
+  }
+  if (event.keyCode === 27) {
+    input.val('');
+    inputContainer.fadeOut(200);
   }
 });
 

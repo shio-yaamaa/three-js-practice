@@ -27,8 +27,8 @@ class SphericalLoading {
       texture => {
         const isBoundByWidth = texture.image.width >= texture.image.height;
         sprite.scale.set(
-          isBoundByWidth ? SPRITE_MAX_DIMENSION : texture.image.width * (SPRITE_MAX_DIMENSION / texture.image.height),
-          isBoundByWidth ? texture.image.height * (SPRITE_MAX_DIMENSION / texture.image.width) : SPRITE_MAX_DIMENSION,
+          isBoundByWidth ? SPRITE_FRAME_DIMENSION : texture.image.width * (SPRITE_FRAME_DIMENSION / texture.image.height),
+          isBoundByWidth ? texture.image.height * (SPRITE_FRAME_DIMENSION / texture.image.width) : SPRITE_FRAME_DIMENSION,
           1
         );
         this.scene.add(sprite);

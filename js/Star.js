@@ -1,156 +1,217 @@
+/* global THREE */
+/* global TWEEN */
+
 class Star {
   constructor(scene) {
     this.scene = scene;
+    this.childrenStars = [];
+  }
+
+  addStar(childStar) {
+    this.childrenStars.push(childStar);
+  }
+
+  removeStar() {
+    // remove connection to parent
+    for (let i = 0; i < this.parent.childrenStars.length(); i++) {
+      if (this.parent.childrenStars[i] === this) {
+        this.parent.childrenStars.splice(i, 1);
+      }
+    }
+    this.parent = null;
+
+    // remove connection to children
+    for (let child of this.childrenStars) {
+      child.parent = undefined;
+    }
+    this.childrenStars = null;
+
+    this.removeFromScene();
+  }
+
+  isLeaf() {
+    return this.childrenStars == true;
   }
 }
 
 class RootStar extends Star {
-  constructor(scene, camera, mamuka, position, color) {
+  constructor(scene) {
     super(scene);
-    this.mamuka = mamuka;
-    this.children = [];
-    this.radius;
-    this.sprite = this.createSprite(scene, mamuka, position);
-    this.setupSpeechBalloon(scene);
+    this.position = new THREE.Vector3();
   }
-  
-  createSprite(scene, mamuka, position) {
-    const sprite = new THREE.Sprite(
-      new THREE.SpriteMaterial({map: new THREE.TextureLoader().load(mamuka.image), color: 0xffffff})
-    );
-    sprite.position.set(position.x, position.y, position.z);
-    sprite.scale.set(5, 5, 1);
-    scene.add(sprite);
-    this.radius = sprite.scale.x / 2 * Math.sqrt(2);
-    return sprite;
+
+  showStar() {
+    this.childrenStars.forEach(childStar => childStar.tweenLinesShow());
   }
-  
-  setupSpeechBalloon(scene, camera) {
-    this.speechBalloon = document.createElement('div');
-  }
-  
-  show() {
-    this.children.forEach(child => child.show());
-  }
-  
-  hide() {
-    this.scene.remove(this.sprite);
-  }
-  
-  hover() {
-    
-  }
-  
-  unhover() {
-    
-  }
-  
-  startTalking(text) {
-    /*this.topic = 'like'; // Should be passed from constellation
-    this.speechBalloon.textContent = `I ${this.topic} ${text}!`;*/
-    
-  }
-  
-  stopTalking() {
-    
+
+  hideStar() {
+    this.childrenStars.forEach(childStar => childStar.tweenLinesHide());
   }
 }
 
 class ChildStar extends Star {
-  constructor(text, scene, root, parent, position, color) { // Root is needed to make MaMuka speak when ChildStar is hovered
+  constructor(scene, text, position, color, rootStar, allStars) {
     super(scene);
     this.text = text;
-    this.sprite = this.createSprite(scene, position, color);
-    this.root = root;
-    this.parent = parent; // Can be null
-    this.children = [];
-    //this.generation = parent.generation + 1; // iranakune???
-    this.line = this.createLine(scene, parent.sprite.position, position, color);
-    this.lineEnd;
-    
-    // Bob Animation
-    this.originalPosition = position;
+    this.parent = parent;
+    this.rootStar = rootStar;
+    this.position = position;
+    this.sprite;
+    this.color = color;
+
+    this.line;
+    this.lineEnd; // used in Tweening
     this.currentBobTweens = [];
+    this.currentScaleTween;
+
+    this.addToScene(allStars);
+    this.bindParent(allStars);
+    this.calculateConstellationLines();
   }
-  
-  createSprite(scene, position, color) {
-    const sprite = new THREE.Sprite(
-      new THREE.SpriteMaterial({map: Star.starTexture, color: color})
+
+  addToScene(allStars) {
+    this.sprite = new THREE.Sprite(
+      new THREE.SpriteMaterial({map: ChildStar.texture, color: this.color})
     );
-    sprite.position.set(position.x, position.y, position.z);
-    sprite.visible = false;
-    scene.add(sprite);
-    return sprite;
+    this.sprite.position.set(this.position.x, this.position.y, this.position.z);
+    //this.sprite.visible = false;
+    this.sprite.material.opacity = 0;
+    this.sprite.transparent = true;
+    this.scene.add(this.sprite);
   }
-  
-  createLine(scene, parentPosition, childPosition, color) {
+
+  removeFromScene() {
+    this.scene.remove(this.sprite);
+    this.scene.remove(this.line);
+  }
+
+  bindParent(allStars) {
+    if (allStars.length < 4) {
+      this.parent = allStars[0];
+    } else {
+      this.parent = allStars.reduce((star1, star2) => {
+        const star1Distance = star1.position.distanceTo(this.position);
+        const star2Distance = star2.position.distanceTo(this.position);
+        return star1Distance < star2Distance ? star1 : star2;
+      });
+    }
+    this.parent.addStar(this);
+  }
+
+  calculateConstellationLines() {
     const lineGeometry = new THREE.Geometry();
-    const start = parentPosition.clone();
-    const end = childPosition.clone();
+    const start = this.parent.position.clone();
+    const end = this.sprite.position.clone();
     const distanceVector = new THREE.Vector3().subVectors(end, start);
     const startCorrection = distanceVector.clone().normalize().multiplyScalar(
-      this.parent instanceof RootStar ? this.parent.radius : 0.3
+      this.parent instanceof RootStar ? MAMUKA_SPRITE_RADIUS : 0.3
     );
     const endCorrection = distanceVector.clone().normalize().multiplyScalar(0.3);
+    const correction = new THREE.Vector3()
+      .subVectors(end, start).clampLength();
     const correctedStart = new THREE.Vector3().addVectors(start, startCorrection);
     const correctedEnd = new THREE.Vector3().subVectors(end, endCorrection);
     this.lineEnd = correctedEnd;
     lineGeometry.vertices.push(correctedStart.clone(), correctedStart.clone());
-    const line = new THREE.Line(lineGeometry, new THREE.LineBasicMaterial({color: color}));
-    scene.add(line);
-    
-    return line;
+    // Tween lineGeometry.vertices[1] to this.lineEnd later
+    this.line = new THREE.Line(
+      lineGeometry,
+      new THREE.LineBasicMaterial({color: this.color})
+    );
+    this.scene.add(this.line);
   }
-  
-  show() {
+
+  tweenLinesShow() {
+    const intermediateOpacity = {opacity: this.sprite.material.opacity};
+    const opacityTween = new TWEEN.Tween(intermediateOpacity)
+      .to({opacity: 1}, 250)
+      .onUpdate(() => {
+        this.sprite.material.opacity = intermediateOpacity.opacity;
+      })
+      .onComplete(() => {
+        this.childrenStars.forEach(childStar => childStar.tweenLinesShow());
+      });
+
     const lineTween = new TWEEN.Tween(this.line.geometry.vertices[1])
       .to(this.lineEnd, 300)
       .onUpdate(() => {
         this.line.geometry.verticesNeedUpdate = true;
       })
       .onComplete(() => {
-        this.sprite.visible = true;
-        this.children.forEach(child => child.show());
+        opacityTween.start();
       })
       .start();
+    
+    
+    
+    /*
+    const lineTween = new TWEEN.Tween(this.line.geometry.vertices[1])
+      .to(this.lineEnd, 300)
+      .onUpdate(() => {this.line.geometry.verticesNeedUpdate = true;})
+      .onComplete(() => {
+        this.sprite.visible = true;
+        this.childrenStars.forEach(childStar => childStar.tweenLinesShow());
+      })
+      .start();*/
+  }
+
+  tweenLinesHide() {
+
   }
   
   hover() {
-    this.root.startTalking('Miwatasu kagirino kouya');
+    console.log('hover');
+    this.expand();
     this.startBob();
   }
   
   unhover() {
-    this.root.stopTalking();
+    console.log('unhover');
+    this.shrink();
     this.stopBob();
   }
   
+  expand() {
+    // Cancel previous scaling
+    this.currentScaleTween && this.currentScaleTween.stop();
+    this.currentScaleTween = new TWEEN.Tween(this.sprite.scale)
+      .to(new THREE.Vector3(3, 3, 1), 300)
+      .start();
+  }
+  
+  shrink() {
+    // Cancel previous scaling
+    this.currentScaleTween && this.currentScaleTween.stop();
+    this.currentScaleTween = new TWEEN.Tween(this.sprite.scale)
+      .to(new THREE.Vector3(1, 1, 1), 300)
+      .start();
+  }
+
   startBob() {
     this.stopBob();
     const bobUpTween = new TWEEN.Tween(this.sprite.position)
-      .to(this.originalPosition.clone().setY(this.originalPosition.y + 0.2), 300);
-    const bobDownTween = new TWEEN.Tween(this.sprite.position)
-      .to(this.originalPosition.clone().setY(this.originalPosition.y - 0.2), 300);
-    bobUpTween.chain(bobDownTween);
-    bobDownTween.chain(bobUpTween);
+      .to(this.position.clone().setY(this.position.y + 0.2), 300);
+    const BobDownTween = new TWEEN.Tween(this.sprite.position)
+      .to(this.position.clone().setY(this.position.y - 0.2), 300);
+    bobUpTween.chain(bobUpTween);
+    BobDownTween.chain(BobDownTween);
     bobUpTween.start();
-    this.currentBobTweens.push(bobUpTween, bobDownTween);
+    this.currentBobTweens.push(bobUpTween, BobDownTween);
   }
   
   stopBob() {
-    this.currentBobTweens.forEach(bobTween => bobTween.stop());
-    this.sprite.position.set(this.originalPosition.x, this.originalPosition.y, this.originalPosition.z);
+    this.currentBobTweens.forEach(bobTween => bobTween.stop())
+    this.sprite.position.set(this.position.x, this.position.y, this.position.z);
     this.currentBobTweens = [];
   }
   
-  // Removal by user
-  remove() {}
+  hover() {
+    
+  }
   
-  // Removal by changing the topic
-  hide() {
-    this.scene.remove(this.sprite);
-    this.scene.remove(this.line);
+  click() {
+    
   }
 }
 
-Star.starTexture = new THREE.TextureLoader().load('img/star.png');
+ChildStar.texture = new THREE.TextureLoader().load('img/star.png');
