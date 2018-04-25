@@ -30,7 +30,7 @@ class Star {
   }
 
   isLeaf() {
-    return this.childrenStars == true;
+    return this.childrenStars.length === 0;
   }
 }
 
@@ -39,14 +39,14 @@ class RootStar extends Star {
     super(scene);
     this.position = new THREE.Vector3();
   }
-
-  showStar() {
-    this.childrenStars.forEach(childStar => childStar.tweenLinesShow());
-  }
-
-  hideStar() {
-    this.childrenStars.forEach(childStar => childStar.tweenLinesHide());
-  }
+  
+  show() {
+		this.childrenStars.forEach(childStar => childStar.show());
+	}
+	
+	hide(callback) {
+		callback && callback();
+	}
 }
 
 class ChildStar extends Star {
@@ -120,43 +120,45 @@ class ChildStar extends Star {
     );
     this.scene.add(this.line);
   }
+  
+  show() {
+		this.tweenVisibility(true, () => {
+			this.childrenStars.forEach(childStar => childStar.show());
+		});
+	}
+	
+	hide(callback) {
+		this.tweenVisibility(false, () => {
+		  // Remove itself from the parent's children list
+			for (let i = 0; i < this.parent.childrenStars.length; i++) {
+			  if (this.parent.childrenStars[i] === this) {
+			    this.parent.childrenStars.splice(i, 1);
+			  }
+			}
+			if (this.parent.isLeaf()) {
+				this.parent.hide(callback);
+			}
+		});
+	}
 
-  tweenLinesShow() {
-    const intermediateOpacity = {opacity: this.sprite.material.opacity};
-    const opacityTween = new TWEEN.Tween(intermediateOpacity)
-      .to({opacity: 1}, 250)
-      .onUpdate(() => {
-        this.sprite.material.opacity = intermediateOpacity.opacity;
-      })
-      .onComplete(() => {
-        this.childrenStars.forEach(childStar => childStar.tweenLinesShow());
-      });
-
+  tweenVisibility(isShowing, callback) {
     const lineTween = new TWEEN.Tween(this.line.geometry.vertices[1])
-      .to(this.lineEnd, 300)
-      .onUpdate(() => {
-        this.line.geometry.verticesNeedUpdate = true;
-      })
-      .onComplete(() => {
-        opacityTween.start();
-      })
-      .start();
-    
-    
-    
-    /*
-    const lineTween = new TWEEN.Tween(this.line.geometry.vertices[1])
-      .to(this.lineEnd, 300)
-      .onUpdate(() => {this.line.geometry.verticesNeedUpdate = true;})
-      .onComplete(() => {
-        this.sprite.visible = true;
-        this.childrenStars.forEach(childStar => childStar.tweenLinesShow());
-      })
-      .start();*/
-  }
-
-  tweenLinesHide() {
-
+			.to(isShowing ? this.lineEnd : this.line.geometry.vertices[0], 300)
+			.onUpdate(() => {
+				this.line.geometry.verticesNeedUpdate = true;
+			});
+		const intermediateOpacity = {opacity: this.sprite.material.opacity};
+		const opacityTween = new TWEEN.Tween(intermediateOpacity)
+			.to({opacity: isShowing ? 1 : 0}, 300)
+			.onUpdate(() => {
+				this.sprite.material.opacity = intermediateOpacity.opacity;
+			});
+		
+		const firstTween = isShowing ? lineTween : opacityTween;
+		const secondTween = isShowing ? opacityTween : lineTween;
+		firstTween.onComplete(() => {
+			secondTween.onComplete(() => callback()).start();
+		}).start();
   }
   
   hover() {

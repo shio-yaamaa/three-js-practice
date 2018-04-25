@@ -15,6 +15,7 @@ class EditView extends View {
     this.setEventListeners(this.defineListeners());
     
     // DOM
+    this.editTopicButtonContainer = $('#edit-topics');
     this.speechBalloon = $('#edit-speech-balloon');
     
     // Input
@@ -56,8 +57,9 @@ class EditView extends View {
     
     const mouseDownListener = event => {
       if (this.intersected.object === this.mamukaSprite) {
-        this.closeConstellation();
-        $('#edit-topics').css('visibility', 'visible'); // Should be shared with zoomMenu
+        this.closeConstellation(() => {
+          this.editTopicButtonContainer.css('visibility', 'visible'); // TODO: doesn't work
+        });
       } else {
         const star = this.constellation.getStarBySprite(this.intersected.object);
         if (star) {
@@ -86,13 +88,13 @@ class EditView extends View {
   }
 
   drawConstellation(type) {
-    this.closeConstellation();
+    this.closeConstellation(null);
     this.constellation = new Constellation(this.scene, this.mamuka, type);
   }
 
-  closeConstellation() {
+  closeConstellation(callback) {
     if (this.constellation) {
-      this.constellation.closeConstellation();
+      this.constellation.close(callback);
     }
   }
   

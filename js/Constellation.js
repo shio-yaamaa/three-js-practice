@@ -11,7 +11,7 @@ class Constellation { // Constellation represented by tree data structure
     this.allStars = [this.rootStar];
     this.layerThickness = 5;
     this.createConstellation(this.defineLength(30), 0);
-    this.drawConstellation();
+    this.draw();
   }
 
   createConstellation(allTexts, layerIndex) {
@@ -32,14 +32,24 @@ class Constellation { // Constellation represented by tree data structure
     this.createConstellation(remainingText, ++layerIndex);
     // The 0th index is the layer whose stars connect to the mamuka.
   }
+  
+  draw() {
+		this.rootStar.show();
+	}
+	
+	close(callback) {
+		// Collect the leaves
+		const leaves = this.allStars.filter(star => star.isLeaf());
+		leaves.forEach(leaf => leaf.hide(callback));
+	}
 
-  drawConstellation() {
+  /*drawConstellation() {
     this.rootStar.showStar();
   }
 
   closeConstellation() {
     this.rootStar.hideStar();
-  }
+  }*/
 
   defineLength(n) {
     const textList = [];
