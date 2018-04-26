@@ -32,9 +32,9 @@ class ZoomManager {
     endCameraPosition.add(this.camera.position);
     
     // Raycaster
-    this.raycaster.near = this.isInFocus ? DEFAULT_NEAR : (this.calculateViewScalar(this.focusedSprite) - 0.2);
-    this.raycaster.far = this.isInFocus ? DEFAULT_FAR : (this.calculateViewScalar(this.focusedSprite) + 0.2);
-    console.log(this.raycaster.near, this.raycaster.far);
+    //this.raycaster.near = this.isInFocus ? DEFAULT_NEAR : (this.calculateViewScalar(this.focusedSprite) - 0.2);
+    //this.raycaster.far = this.isInFocus ? DEFAULT_FAR : (this.calculateViewScalar(this.focusedSprite) + 0.2);
+    //console.log(this.raycaster.near, this.raycaster.far);
 
     const positionTween = new TWEEN.Tween(this.camera.position)
       .to(endCameraPosition, this.isInFocus ? TWEEN_ZOOM_OUT : TWEEN_ZOOM_IN)
@@ -77,6 +77,7 @@ class ZoomManager {
 
     // Camera animation setup
     const normalCamNear = {near: this.camera.near}
+    
     // Tweening
     this.ongoingTween.forEach(tween => tween.stop());
     this.ongoingTween = [rotationTween, positionTween, fogTween];
@@ -84,10 +85,9 @@ class ZoomManager {
       rotationTween.start();
       fogTween.start();
       this.toggleOnStart();
-
-    }).start().onComplete(() => {
+    }).onComplete(() => {
       this.toggleOnComplete();
-    });
+    }).start();
   }
 
   calculateViewScalar(viewObject) {

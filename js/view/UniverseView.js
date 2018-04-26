@@ -43,6 +43,7 @@ class UniverseView extends View {
 
   defineListeners() {
     const resizeListener = () => {
+      console.log('universe resize');
       this.camera.aspect = window.innerWidth / window.innerHeight;
       this.camera.updateProjectionMatrix();
       View.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -79,7 +80,6 @@ class UniverseView extends View {
 
     // Zoom listener
     const spriteZoomListener = () => {
-      console.log()
       if (this.zoomManager.isInFocus && this.intersected && this.intersected.object === this.zoomManager.focusedSprite) {
         // cannot zoom out when hovered over focusedSprite
         return;

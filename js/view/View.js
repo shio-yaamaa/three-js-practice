@@ -42,7 +42,10 @@ class View {
     this.requestAnimationFrameId && cancelAnimationFrame(this.requestAnimationFrameId);
     this.requestAnimationFrameId = null;
     this.eventListeners.forEach(eventListener => {
-      eventListener.target.removeEventListener(eventListener.type, eventListener.listener);
+      eventListener.target.removeEventListener(
+        eventListener.type,
+        eventListener.listener
+      );
     });
     View.currentView = null;
   }
@@ -73,18 +76,17 @@ class View {
   }
 
   setEventListeners(eventListeners) {
-    // listeners: [{target: DOM element, type: 'mousedown', listener: function}, ...]
     eventListeners.forEach(eventListener => {
       this.eventListeners.push(eventListener);
       eventListener.target.addEventListener(
         eventListener.type,
-        event => eventListener.listener(event)
+        eventListener.listener
       );
     });
   }
 }
 
 View.currentView = null;
-View.renderer = new THREE.WebGLRenderer({antialias: true});
+View.renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
 View.renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(View.renderer.domElement);

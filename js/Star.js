@@ -82,7 +82,9 @@ class ChildStar extends Star {
 
   removeFromScene() {
     this.scene.remove(this.sprite);
+    console.log(this.scene.children.length);
     this.scene.remove(this.line);
+    console.log(this.scene.children.length);
   }
 
   bindParent(allStars) {
@@ -138,12 +140,14 @@ class ChildStar extends Star {
 			if (this.parent.isLeaf()) {
 				this.parent.hide(callback);
 			}
+			this.removeFromScene();
 		});
 	}
 
   tweenVisibility(isShowing, callback) {
     const lineTween = new TWEEN.Tween(this.line.geometry.vertices[1])
 			.to(isShowing ? this.lineEnd : this.line.geometry.vertices[0], 300)
+			.easing(TWEEN.Easing.Sinusoidal.Out)
 			.onUpdate(() => {
 				this.line.geometry.verticesNeedUpdate = true;
 			});

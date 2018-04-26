@@ -43,14 +43,6 @@ class Constellation { // Constellation represented by tree data structure
 		leaves.forEach(leaf => leaf.hide(callback));
 	}
 
-  /*drawConstellation() {
-    this.rootStar.showStar();
-  }
-
-  closeConstellation() {
-    this.rootStar.hideStar();
-  }*/
-
   defineLength(n) {
     const textList = [];
     for (let i = 0; i < n; i++) {

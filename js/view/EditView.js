@@ -56,18 +56,19 @@ class EditView extends View {
     // };
     
     const mouseDownListener = event => {
-      if (this.intersected.object === this.mamukaSprite) {
-        this.closeConstellation(() => {
-          this.editTopicButtonContainer.css('visibility', 'visible'); // TODO: doesn't work
-        });
-      } else {
-        const star = this.constellation.getStarBySprite(this.intersected.object);
-        if (star) {
-          star.click();
-        } else { // Empty space is clicked
-          this.currentSelectedStar = null;
-          
+      if (this.intersected) { // Something is clicked
+        if (this.intersected.object === this.mamukaSprite) { // mamukaSprite is clicked
+          this.closeConstellation(() => {
+            this.editTopicButtonContainer.css('visibility', 'visible'); // TODO: doesn't work
+          });
+        } else {
+          const star = this.constellation.getStarBySprite(this.intersected.object);
+          if (star) { // A ChildStar is clicked
+            star.click();
+          }
         }
+      } else { // Empty space is clicked
+        this.currentSelectedStar = null;
       }
     }
 
