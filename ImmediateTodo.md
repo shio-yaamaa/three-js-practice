@@ -1,4 +1,5 @@
 - showするときのcallback
+- mamuka radius is not radius
 - RemoveEventListener doesn't work!!! -> ask Roger to copy my View.js
 - Why are there 90 children in the EditView scene?
 - Set renderer's clearColor in each view?
@@ -17,3 +18,4 @@ Delete the comments that list jQuery functions
 - inconsistency of parent <-> childrenStars
 - Tween.start() after setting all the callbacks @ZoomManager line 80
 - easing of lineTween
+- save the cameraControls' state (active or inactive)

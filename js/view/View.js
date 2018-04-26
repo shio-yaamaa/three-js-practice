@@ -9,6 +9,7 @@ class View {
 
     this.cameraControls;
     this.cameraControlsClass = cameraControlsClass;
+    this.isCameraControlsActive = true;
     this.clock = new THREE.Clock();
 
     this.raycaster = new THREE.Raycaster();
@@ -24,7 +25,7 @@ class View {
   start() {
     View.currentView && View.currentView.stop();
 
-    this.setCameraControls();
+    this.setCameraControls(this.isCameraControlsActive);
     this.setEventListeners(this.eventListeners);
     const animate = () => {
       this.requestAnimationFrameId = requestAnimationFrame(animate);
@@ -50,10 +51,10 @@ class View {
     View.currentView = null;
   }
 
-  setCameraControls() {
+  setCameraControls(isActive) {
     if (this.cameraControlsClass) {
       this.cameraControls = new this.cameraControlsClass(this.camera);
-      this.toggleCameraControls(true);
+      this.toggleCameraControls(isActive);
     }
   }
 
@@ -63,6 +64,7 @@ class View {
         ? DEFAULT_MOVEMENT_SPEED : 0;
       this.cameraControls.rollSpeed = toBeActive
         ? DEFAULT_ROLL_SPEED : 0;
+      this.isCameraControlsActive = toBeActive;
     }
   }
 

@@ -6,7 +6,7 @@ class EditView extends View {
     super(scene, camera, cameraControlsClass);
 
     this.mamuka = mamuka;
-    this.constellation;
+    this.currentConstellation;
 
     this.init();
     this.setRenderFunction(this.render);
@@ -25,6 +25,14 @@ class EditView extends View {
 
   init() {
     this.camera.position.z = 30;
+  }
+  
+  stop() {
+    super.stop();
+    // Remove all the DOM elements related to EditView
+    this.editTopicButtonContainer.css('visibility', 'hidden');
+    this.speechBalloon.css('visibility', 'hidden');
+    // TODO: remove the input
   }
   
   defineListeners() {
@@ -56,19 +64,29 @@ class EditView extends View {
     // };
     
     const mouseDownListener = event => {
-      if (this.intersected) { // Something is clicked
-        if (this.intersected.object === this.mamukaSprite) { // mamukaSprite is clicked
-          this.closeConstellation(() => {
-            this.editTopicButtonContainer.css('visibility', 'visible'); // TODO: doesn't work
-          });
-        } else {
-          const star = this.constellation.getStarBySprite(this.intersected.object);
-          if (star) { // A ChildStar is clicked
-            star.click();
+      if (this.currentConstellation) { // There is a constellation
+        if (this.intersected) { // Something is clicked
+          if (this.intersected.object === this.mamukaSprite) { // mamukaSprite is clicked
+            this.closeConstellation(() => {
+              this.editTopicButtonContainer.css('visibility', 'visible');
+            });
+          } else {
+            const star = this.currentConstellation.getStarBySprite(this.intersected.object);
+            if (star) { // A ChildStar is clicked
+              star.click();
+            }
           }
+        } else { // Empty space is clicked
+          this.currentSelectedStar = null;
         }
-      } else { // Empty space is clicked
-        this.currentSelectedStar = null;
+      } else { // There is no constellation
+        if (this.intersected) { // Something is clicked
+          if (this.intersected.object === this.mamukaSprite) { // mamukaSprite is clicked
+            // Edit mamuka's name
+          }
+        } else { // Empty space is clicked
+          universeView.start();
+        }
       }
     }
 
@@ -89,14 +107,15 @@ class EditView extends View {
   }
 
   drawConstellation(type) {
-    this.closeConstellation(null);
-    this.constellation = new Constellation(this.scene, this.mamuka, type);
+    this.closeConstellation();
+    this.currentConstellation = new Constellation(this.scene, this.mamuka, type);
   }
 
   closeConstellation(callback) {
-    if (this.constellation) {
-      this.constellation.close(callback);
+    if (this.currentConstellation) {
+      this.currentConstellation.close(callback);
     }
+    this.currentConstellation = null;
   }
   
   mamukaTalk(text) {
@@ -114,14 +133,13 @@ class EditView extends View {
     //console.log(intersects[0]);
     
     // ChildStar's hover animation
-    if (this.constellation) {
+    if (this.currentConstellation) {
       const currentIntersectStar = intersects[0]
-        ? this.constellation.getStarBySprite(intersects[0].object)
+        ? this.currentConstellation.getStarBySprite(intersects[0].object)
         : null;
       const previousIntersectStar = this.intersected
-        ? this.constellation.getStarBySprite(this.intersected.object)
+        ? this.currentConstellation.getStarBySprite(this.intersected.object)
         : null;
-      //console.log(currentIntersectStar, previousIntersectStar);
       if (currentIntersectStar && previousIntersectStar && currentIntersectStar != previousIntersectStar) { // The hovered star is changed
         currentIntersectStar.hover();
         previousIntersectStar.unhover();

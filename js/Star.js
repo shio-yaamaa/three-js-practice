@@ -146,14 +146,14 @@ class ChildStar extends Star {
 
   tweenVisibility(isShowing, callback) {
     const lineTween = new TWEEN.Tween(this.line.geometry.vertices[1])
-			.to(isShowing ? this.lineEnd : this.line.geometry.vertices[0], 300)
+			.to(isShowing ? this.lineEnd : this.line.geometry.vertices[0], 250)
 			.easing(TWEEN.Easing.Sinusoidal.Out)
 			.onUpdate(() => {
 				this.line.geometry.verticesNeedUpdate = true;
 			});
 		const intermediateOpacity = {opacity: this.sprite.material.opacity};
 		const opacityTween = new TWEEN.Tween(intermediateOpacity)
-			.to({opacity: isShowing ? 1 : 0}, 300)
+			.to({opacity: isShowing ? 1 : 0}, 100)
 			.onUpdate(() => {
 				this.sprite.material.opacity = intermediateOpacity.opacity;
 			});
